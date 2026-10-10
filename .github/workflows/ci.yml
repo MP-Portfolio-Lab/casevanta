@@ -75,7 +75,9 @@ jobs:
           global-json-file: global.json
       - name: Trust the ASP.NET Core development certificate (the BFF and Keycloak serve HTTPS with it)
         run: |
-          dotnet dev-certs https --trust
+          # Exit code 4 means the certificate is trusted for OpenSSL (which .NET uses on Linux) but not
+          # for every other client on the runner; that is all these tests need.
+          dotnet dev-certs https --trust || test $? -eq 4
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
       - name: Distributed topology tests (suite C, Docker)
         run: dotnet test --project backend/tests/Casevanta.AppHost.Tests/Casevanta.AppHost.Tests.csproj --configuration Release
@@ -103,7 +105,9 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Trust the ASP.NET Core development certificate (the BFF and Keycloak serve HTTPS with it)
         run: |
-          dotnet dev-certs https --trust
+          # Exit code 4 means the certificate is trusted for OpenSSL (which .NET uses on Linux) but not
+          # for every other client on the runner; that is all these tests need.
+          dotnet dev-certs https --trust || test $? -eq 4
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
       - name: Browser journeys (suite B) through the Aspire AppHost and Keycloak
         run: pnpm nx e2e staff-web-e2e --outputStyle=static
