@@ -1,5 +1,5 @@
-﻿using BffOpenIddict.Server;
-using BffOpenIddict.Server.Services;
+﻿using Casevanta.Api;
+using Casevanta.Api.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +18,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 var services = builder.Services;
 var configuration = builder.Configuration;
 
-var stsServer = configuration["OpenIDConnectSettings:Authority"];
+var identityProviderAuthority = configuration["OpenIDConnectSettings:Authority"];
 
 services.AddSecurityHeaderPolicies()
     .SetPolicySelector(ctx =>
@@ -29,7 +29,7 @@ services.AddSecurityHeaderPolicies()
         }
 
         return SecurityHeadersDefinitions.GetHeaderPolicyCollection(
-            builder.Environment.IsDevelopment(), stsServer);
+            builder.Environment.IsDevelopment(), identityProviderAuthority);
     });
 
 services.AddAntiforgery(options =>
@@ -84,13 +84,12 @@ builder.Services.AddReverseProxy()
 var app = builder.Build();
 
 JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
-// Do not add to deployments, for debug reasons
-IdentityModelEventSource.ShowPII = true;
 
 if (app.Environment.IsDevelopment())
 {
+    // Personal data in identity model logs helps local debugging; never enable it elsewhere.
+    IdentityModelEventSource.ShowPII = true;
     app.UseDeveloperExceptionPage();
-    app.UseWebAssemblyDebugging();
 }
 else
 {

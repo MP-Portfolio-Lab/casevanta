@@ -14,9 +14,9 @@ const uiDevServer = 'http://localhost:4201';
 const reuseExistingServer = !process.env.CI;
 
 /**
- * Suite B baseline harness: the untouched upstream sample. The Angular dev server runs on plain
- * HTTP and the BFF is pointed at it through command-line configuration only, so no source file
- * changes are needed to characterise the original behaviour.
+ * Suite B harness: the identity provider, the Angular dev server (plain HTTP on 4201) and the BFF,
+ * whose Development settings proxy the dev server. The journeys themselves never change between
+ * migration steps; only this wiring does.
  */
 export default defineConfig({
   testDir: './tests',
@@ -59,11 +59,7 @@ export default defineConfig({
     },
     {
       name: 'bff',
-      command: [
-        'dotnet run --',
-        `--UiDevServerUrl=${uiDevServer}`,
-        `"--ReverseProxy:Clusters:cluster1:Destinations:cluster1/destination1:Address=${uiDevServer}/"`,
-      ].join(' '),
+      command: 'dotnet run',
       cwd: path.join(repoRoot, 'backend', 'src', 'Casevanta.Api'),
       url: `${bff.origin}/`,
       ignoreHTTPSErrors: true,

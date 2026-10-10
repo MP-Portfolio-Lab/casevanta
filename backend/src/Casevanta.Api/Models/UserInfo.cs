@@ -1,4 +1,4 @@
-﻿namespace BffOpenIddict.Server.Models;
+﻿namespace Casevanta.Api.Models;
 
 public class UserInfo
 {

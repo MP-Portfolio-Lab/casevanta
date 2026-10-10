@@ -1,6 +1,6 @@
 using Microsoft.Net.Http.Headers;
 
-namespace BffOpenIddict.Server.Services;
+namespace Casevanta.Api.Services;
 
 public static class ApplicationBuilderExtensions
 {

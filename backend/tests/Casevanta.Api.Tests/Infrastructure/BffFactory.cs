@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using BffOpenIddict.Server.Models;
+using Casevanta.Api.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;

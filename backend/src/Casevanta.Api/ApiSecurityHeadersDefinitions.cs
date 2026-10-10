@@ -1,4 +1,4 @@
-﻿namespace BffOpenIddict.Server;
+﻿namespace Casevanta.Api;
 
 public static class ApiSecurityHeadersDefinitions
 {

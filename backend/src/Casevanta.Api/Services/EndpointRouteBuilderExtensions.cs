@@ -1,4 +1,4 @@
-namespace BffOpenIddict.Server.Services;
+namespace Casevanta.Api.Services;
 
 public static class EndpointRouteBuilderExtensions
 {

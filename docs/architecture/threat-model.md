@@ -60,7 +60,7 @@ flowchart LR
 | T6 | [S] Session hijacking, fixation or an overlong session | Secure, HttpOnly, SameSite=Lax session cookie issued only after a completed OIDC sign-in | B05 |
 | T7 | [E] Unauthenticated or unauthorised API access | `[Authorize]` on protected endpoints; `/api` requests get 401 instead of a login redirect; unknown `/api` routes get 404 | A01, A02, A03, A08, A18, B02 |
 | T8 | [S] Logout leaves a live session at the BFF or identity provider | Logout deletes the session cookie and redirects to the end-session endpoint with `id_token_hint` and a registered `post_logout_redirect_uri` | A11, B07 |
-| T9 | [I] Information disclosure through errors, headers or routing | No `Server` header; developer exception page only in Development; unknown API routes return 404, client routes return the host page | A03, A16, B03, B04 |
+| T9 | [I] Information disclosure through errors, headers or routing | No `Server` header; developer exception page and identity-model PII logging only in Development; unknown API routes return 404, client routes return the host page | A03, A16, A21, B03, B04 |
 | T10 | [I/T] Transport downgrade or mixed content | HTTPS redirection; HSTS for one year (with `preload` on `/api`) outside Development; `block-all-mixed-content` | A07, A17 |
 | T11 | [I] Secrets published through the public repository | Sanitised import (no private key, no user database); gitleaks over the full history in CI; GitHub secret scanning with push protection | CI job `secrets` |
 | T12 | [E] The development proxy exposed outside Development | YARP routes are mapped only in Development | Inspection (Program.cs) |
@@ -77,7 +77,7 @@ documents current behaviour and must change when the gap closes.
 | G1 | ~~Protocol-relative return URLs (`//evil.example`) pass the open-redirect guard~~ | T4 | Fixed 2026-10-10: only site-relative paths are accepted, everything else falls back to `/` (A20) |
 | G2 | Logout ignores antiforgery (`[IgnoreAntiforgeryToken]`), so another site can force a logout | T2 | Fix with the session work in the Keycloak step; A12 documents it |
 | G3 | Default 14-day sliding cookie lifetime; tickets are self-contained, so a copied cookie stays valid until it expires, even after logout | T6 | Explicit lifetime in the Keycloak step; server-side ticket store evaluated in ADR-0008 |
-| G4 | `IdentityModelEventSource.ShowPII = true` in every environment (BFF and IdentityProvider) | T9 | Development-only in the restructuring step; the IdentityProvider is removed with Keycloak |
+| G4 | `IdentityModelEventSource.ShowPII = true` in every environment (BFF and IdentityProvider) | T9 | BFF fixed 2026-10-10: Development only (A21). The IdentityProvider keeps it until it is removed with Keycloak |
 | G5 | CSP keeps `'unsafe-inline'` next to the nonce (ignored by nonce-aware browsers) and `style-src 'unsafe-inline'` | T1 | Re-evaluated when the new UI lands |
 | G6 | Authorization is authentication-only: no roles or policies | T7 | First policy in the Keycloak step; model in ADR-0006 |
 | G7 | The IdentityProvider depends on packages with known high-severity advisories (`SQLitePCLRaw.lib.e_sqlite3` 2.1.11, `Microsoft.OpenApi` 2.4.1) | T14 | Development-only; removed together with the IdentityProvider |
