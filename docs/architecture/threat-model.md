@@ -85,3 +85,4 @@ documents current behaviour and must change when the gap closes.
 | G9 | Data Protection keys use the default per-user location; containers would lose them on restart | T6 | ADR-0008 |
 | G10 | The development identity provider will run over plain HTTP inside the local container network | T10 | Development-only; metadata must be HTTPS outside Development |
 | G11 | No back-channel logout | T8 | Out of scope for this phase |
+| G12 | The inherited Angular 21 workspace (`bff/ui/package-lock.json`) carries 102 Dependabot alerts on 2026-10-10: 2 critical (development-only), 38 high, including Angular 21.2.13 runtime advisories | T14 | That workspace is never deployed and is replaced by the Angular 22 Nx workspace with a fresh lockfile |
