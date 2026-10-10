@@ -59,7 +59,7 @@
     "angular-eslint": "^22.1.0",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-plugin-playwright": "^1.6.2",
+    "eslint-plugin-playwright": "^2.12.1",
     "jsdom": "^27.1.0",
     "lefthook": "2.2.1",
     "nx": "23.3.0",
