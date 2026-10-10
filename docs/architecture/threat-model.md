@@ -8,7 +8,7 @@
 | Method | Data flows and trust boundaries, then threats per boundary (STRIDE category in brackets). Every mitigation names the automated test that keeps it true. |
 
 Test IDs refer to `backend/tests/Casevanta.Api.Tests` (A, in-memory API and header tests) and to
-`e2e/` (B, browser journeys). Update this document whenever a test ID, a mitigation or a gap changes.
+`apps/staff-web-e2e` (B, browser journeys). Update this document whenever a test ID, a mitigation or a gap changes.
 
 ## System and trust boundaries
 
@@ -53,7 +53,7 @@ flowchart LR
 | ID | Threat | Mitigation in place | Verified by |
 |---|---|---|---|
 | T1 | [I/E] Cross-site scripting steals tokens or rides the session | Tokens stay server-side; session cookie is HttpOnly; strict CSP with a fresh per-request nonce injected into the host page; Angular template sanitisation | A05, A06, A07, A17, B05, B08 |
-| T2 | [T] Cross-site request forgery against the API | Session cookie SameSite=Lax; double-submit antiforgery (`__Host-` HttpOnly cookie + `X-XSRF-TOKEN` header) bound to the signed-in user; global `AutoValidateAntiforgeryToken`; the data endpoint validates even GET | A06, A09, A10, A19, B06 |
+| T2 | [T] Cross-site request forgery against the API | Session cookie SameSite=Lax; double-submit antiforgery (`__Host-` HttpOnly cookie + `X-XSRF-TOKEN` header) bound to the signed-in user; global `AutoValidateAntiforgeryToken`; the data endpoint validates even GET; the SPA sends the token only to same-origin `/api/` URLs | A06, A09, A10, A19, B06, staff-web unit tests (antiforgery interceptor) |
 | T3 | [S] Login CSRF, authorization-code injection or replay | Authorization code flow with PKCE (S256), `state` and `nonce`, HttpOnly + Secure correlation and nonce cookies | A04, B05 |
 | T4 | [S] Open redirect through `returnUrl` after login | Absolute http(s) URLs are reduced to their path; relative ones are anchored at `/`; protocol-relative, backslash and control-character forms fall back to `/` | A15, A20 |
 | T5 | [T] Clickjacking | `X-Frame-Options: DENY` and `frame-ancestors 'none'` | A07, A17 |
@@ -78,11 +78,11 @@ documents current behaviour and must change when the gap closes.
 | G2 | Logout ignores antiforgery (`[IgnoreAntiforgeryToken]`), so another site can force a logout | T2 | Fix with the session work in the Keycloak step; A12 documents it |
 | G3 | Default 14-day sliding cookie lifetime; tickets are self-contained, so a copied cookie stays valid until it expires, even after logout | T6 | Explicit lifetime in the Keycloak step; server-side ticket store evaluated in ADR-0008 |
 | G4 | `IdentityModelEventSource.ShowPII = true` in every environment (BFF and IdentityProvider) | T9 | BFF fixed 2026-10-10: Development only (A21). The IdentityProvider keeps it until it is removed with Keycloak |
-| G5 | CSP keeps `'unsafe-inline'` next to the nonce (ignored by nonce-aware browsers) and `style-src 'unsafe-inline'` | T1 | Re-evaluated when the new UI lands |
+| G5 | CSP keeps `'unsafe-inline'` next to the nonce (ignored by nonce-aware browsers) and `style-src 'unsafe-inline'` | T1 | Re-evaluated 2026-10-10 with the Angular 22 and spartan-ng UI: B08 passes, but only in Development, where `style-src` allows `'self'` and `'unsafe-inline'`. The production policy (nonce-only styles) has no browser test yet. Add one, then remove the fallback together with violation reporting |
 | G6 | Authorization is authentication-only: no roles or policies | T7 | First policy in the Keycloak step; model in ADR-0006 |
 | G7 | The IdentityProvider depends on packages with known high-severity advisories (`SQLitePCLRaw.lib.e_sqlite3` 2.1.11, `Microsoft.OpenApi` 2.4.1) | T14 | Development-only; removed together with the IdentityProvider |
 | G8 | A sample OIDC client secret is committed in `appsettings.json` and the IdentityProvider seeding | T11 | Replaced by a generated, per-machine Aspire parameter in the Keycloak step |
 | G9 | Data Protection keys use the default per-user location; containers would lose them on restart | T6 | ADR-0008 |
 | G10 | The development identity provider will run over plain HTTP inside the local container network | T10 | Development-only; metadata must be HTTPS outside Development |
 | G11 | No back-channel logout | T8 | Out of scope for this phase |
-| G12 | The inherited Angular 21 workspace (`bff/ui/package-lock.json`) carries 102 Dependabot alerts on 2026-10-10: 2 critical (development-only), 38 high, including Angular 21.2.13 runtime advisories | T14 | That workspace is never deployed and is replaced by the Angular 22 Nx workspace with a fresh lockfile |
+| G12 | ~~The inherited Angular 21 workspace (`bff/ui/package-lock.json`) carried 102 Dependabot alerts: 2 critical (development-only), 38 high, including Angular 21.2.13 runtime advisories~~ | T14 | Closed 2026-10-10: the workspace was replaced by the Angular 22 Nx workspace with a fresh lockfile |

@@ -1,0 +1,10 @@
+# Git hooks, installed by scripts/bootstrap.sh (`pnpm exec lefthook install`).
+pre-commit:
+  parallel: true
+  commands:
+    secrets:
+      run: gitleaks git --pre-commit --staged --redact --no-banner .
+    prettier:
+      glob: '*.{ts,mts,mjs,js,json,html,css,yml,yaml}'
+      run: pnpm exec prettier --write --ignore-unknown --log-level warn {staged_files}
+      stage_fixed: true

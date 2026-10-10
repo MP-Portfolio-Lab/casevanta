@@ -1,6 +1,5 @@
 # Version updates. Dependabot security updates are enabled separately (scripts/github-protect.sh)
-# and cover every manifest. npm and NuGet version updates are added once the workspace and the
-# backend solution reach their final locations.
+# and cover every manifest. NuGet version updates are added once the backend solution settles.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -9,4 +8,24 @@ updates:
       interval: weekly
     groups:
       github-actions:
-        patterns: ["*"]
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      angular:
+        patterns: ['@angular/*', '@angular-devkit/*', '@schematics/angular', 'angular-eslint']
+      nx:
+        patterns: ['nx', '@nx/*']
+      spartan-and-styling:
+        patterns: ['@spartan-ng/*', 'tailwindcss', '@tailwindcss/*', '@ng-icons/*']
+      tooling:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+    ignore:
+      # Angular 22 supports TypeScript >=6.0 <6.1 only; TypeScript moves with Angular upgrades.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
