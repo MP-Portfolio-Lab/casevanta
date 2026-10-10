@@ -1,8 +1,7 @@
-﻿using Casevanta.Api.Models;
+using System.Security.Claims;
+using Casevanta.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-using System.Security.Claims;
 
 namespace Casevanta.Api.Controllers;
 

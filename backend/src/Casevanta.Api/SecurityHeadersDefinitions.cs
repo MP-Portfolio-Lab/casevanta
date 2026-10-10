@@ -1,4 +1,4 @@
-﻿namespace Casevanta.Api;
+namespace Casevanta.Api;
 
 public static class SecurityHeadersDefinitions
 {

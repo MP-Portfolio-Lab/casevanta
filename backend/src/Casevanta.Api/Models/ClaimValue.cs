@@ -1,4 +1,4 @@
-﻿namespace Casevanta.Api.Models;
+namespace Casevanta.Api.Models;
 
 public class ClaimValue
 {

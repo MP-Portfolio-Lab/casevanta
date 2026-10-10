@@ -1,4 +1,4 @@
-﻿using Casevanta.Api;
+using Casevanta.Api;
 using Casevanta.Api.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
