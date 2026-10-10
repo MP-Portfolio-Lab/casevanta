@@ -19,13 +19,24 @@ Environment variables use `__` between sections, for example `OpenIDConnectSetti
 | `OpenIDConnectSettings:Authority` | Identity provider the BFF trusts; also allowed in CSP `form-action` | `https://localhost:44318` (inherited OpenIddict server) | same, with a static discovery document | HTTPS authority of the deployed identity provider |
 | `OpenIDConnectSettings:ClientId` | OIDC client of the BFF | `oidc-pkce-confidential` | same | per environment |
 | `OpenIDConnectSettings:ClientSecret` | Client secret for the token endpoint | sample value in `appsettings.json` (gap G8, replaced in the Keycloak step) | same | secret store only |
-| `UiDevServerUrl` | Where `_Host.cshtml` fetches `index.html` in Development | `http://localhost:4201` | not used | not used |
+| `UiDevServerUrl` | Where `_Host.cshtml` fetches `index.html` in Development | `http://localhost:4201` (injected by the AppHost; `appsettings.Development.json` holds the same value for runs without Aspire) | not used | not used |
 | `ReverseProxy:*` | YARP routes to the Angular dev server (scripts, styles, `@vite`, `@fs`, HMR websocket, favicon) | cluster `staff-web`, destination `dev-server` at `http://localhost:4201/` | not mapped | not mapped |
 
 Outside Development, `Pages/_Host.cshtml` reads `wwwroot/index.html` from the working directory.
 Packaging the Angular build (`dist/apps/staff-web/browser`) into that folder or a container image is
 part of the deployment work and is not automated yet. Keeping build output out of the API project
 also stops a stale local bundle from shadowing the dev server in Development.
+
+## Local orchestration (Aspire)
+
+| Setting | Purpose | Value |
+|---|---|---|
+| Resources | What `scripts/dev.sh` starts | `postgres` with database `casevanta`, `identity-provider` (44318), `staff-web` (4201, after `pnpm install --frozen-lockfile`), `api` (5001) |
+| `Frontend:Enabled` | AppHost switch for the Angular dev server | `true`; suite C passes `false` so it needs neither Node.js nor pnpm |
+| Injected into `api` | Values the AppHost provides at start | `ConnectionStrings__casevanta`, `UiDevServerUrl`, the YARP destination address, `OTEL_EXPORTER_OTLP_ENDPOINT` |
+| Health endpoints | Readiness and liveness | `/health` and `/alive`, mapped in Development only |
+| Dashboard | Logs, traces, metrics, resource state | `https://localhost:17032` (AppHost launch profile; the login token is printed on start) |
+| `AspireCliInvocationMode` | How AppHost builds find the Aspire CLI bundle (orchestrator and dashboard) | unset locally (the installed CLI on `PATH`); `dnxpinned` in CI (`dnx aspire.cli@<SDK version>`) |
 
 ## Frontend workspace
 

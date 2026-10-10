@@ -60,12 +60,13 @@ flowchart LR
 | T6 | [S] Session hijacking, fixation or an overlong session | Secure, HttpOnly, SameSite=Lax session cookie issued only after a completed OIDC sign-in | B05 |
 | T7 | [E] Unauthenticated or unauthorised API access | `[Authorize]` on protected endpoints; `/api` requests get 401 instead of a login redirect; unknown `/api` routes get 404 | A01, A02, A03, A08, A18, B02 |
 | T8 | [S] Logout leaves a live session at the BFF or identity provider | Logout deletes the session cookie and redirects to the end-session endpoint with `id_token_hint` and a registered `post_logout_redirect_uri` | A11, B07 |
-| T9 | [I] Information disclosure through errors, headers or routing | No `Server` header; developer exception page and identity-model PII logging only in Development; unknown API routes return 404, client routes return the host page | A03, A16, A21, B03, B04 |
+| T9 | [I] Information disclosure through errors, headers or routing | No `Server` header; developer exception page, identity-model PII logging and health endpoints only in Development; unknown API routes return 404, client routes return the host page | A03, A16, A21, B03, B04 |
 | T10 | [I/T] Transport downgrade or mixed content | HTTPS redirection; HSTS for one year (with `preload` on `/api`) outside Development; `block-all-mixed-content` | A07, A17 |
 | T11 | [I] Secrets published through the public repository | Sanitised import (no private key, no user database); gitleaks over the full history in CI; GitHub secret scanning with push protection | CI job `secrets` |
 | T12 | [E] The development proxy exposed outside Development | YARP routes are mapped only in Development | Inspection (Program.cs) |
 | T13 | [I] Cross-origin reads and side channels | COOP, COEP and CORP set to same-origin / require-corp; no CORS policy, so no cross-origin API access | A07, A17 |
 | T14 | [All] Vulnerable dependencies | Dependabot alerts and security updates; CodeQL default setup | GitHub settings (`scripts/github-protect.sh`) |
+| T15 | [I] Telemetry leaks secrets or personal data | Tokens stay in the server-side session and are never logged; `form_post` keeps the authorization code out of URLs; identity-model PII logging only in Development; health probes excluded from traces; telemetry goes only to the OTLP endpoint the AppHost configures | Observability checklist (`docs/architecture/overview.md`), A21 |
 
 ## Known gaps
 
@@ -86,3 +87,4 @@ documents current behaviour and must change when the gap closes.
 | G10 | The development identity provider will run over plain HTTP inside the local container network | T10 | Development-only; metadata must be HTTPS outside Development |
 | G11 | No back-channel logout | T8 | Out of scope for this phase |
 | G12 | ~~The inherited Angular 21 workspace (`bff/ui/package-lock.json`) carried 102 Dependabot alerts: 2 critical (development-only), 38 high, including Angular 21.2.13 runtime advisories~~ | T14 | Closed 2026-10-10: the workspace was replaced by the Angular 22 Nx workspace with a fresh lockfile |
+| G13 | URL query strings are exported to telemetry unredacted; today the only OIDC value is the encrypted `state` of the sign-out callback | T15 | Rule for every endpoint: no secrets or personal data in URLs (ADR-0007). Enable query redaction before telemetry leaves the developer machine |
