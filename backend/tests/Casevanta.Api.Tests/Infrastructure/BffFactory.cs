@@ -53,6 +53,7 @@ public class BffFactory : WebApplicationFactory<UserInfo>
         builder.ConfigureTestServices(services =>
         {
             services.AddDataProtection().UseEphemeralDataProtectionProvider();
+            services.AddControllers().AddApplicationPart(typeof(FaultInjectionController).Assembly);
             services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
             {
                 var authority = (options.Authority

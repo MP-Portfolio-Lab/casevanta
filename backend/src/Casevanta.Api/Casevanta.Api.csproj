@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="NetEscapades.AspNetCore.SecurityHeaders" />
     <PackageReference Include="NetEscapades.AspNetCore.SecurityHeaders.TagHelpers" />
     <PackageReference Include="Yarp.ReverseProxy" />

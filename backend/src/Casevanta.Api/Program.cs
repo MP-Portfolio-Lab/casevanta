@@ -57,6 +57,10 @@ services.AddAntiforgery(options =>
 services.AddHttpClient();
 services.AddOptions();
 
+// API errors use RFC 9457 problem details (ADR-0007); the OpenAPI document is served in Development only.
+services.AddProblemDetails();
+services.AddOpenApi();
+
 // Session cookies stay valid across restarts and instances of the same application only if they
 // share keys; key storage for deployed environments is described in ADR-0008.
 services.AddDataProtection().SetApplicationName("casevanta");
@@ -131,10 +135,16 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    // Pages get the error page; API callers get problem details without internal details. The API
+    // handler is registered second so that it is the innermost one and handles /api failures first.
     app.UseExceptionHandler("/Error");
+    app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"), api => api.UseExceptionHandler());
 }
 
 app.UseSecurityHeaders();
+
+// Empty API error responses (401, 403, 404, ...) get a problem details body.
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"), api => api.UseStatusCodePages());
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -152,6 +162,8 @@ app.MapNotFound("/api/{**segment}");
 
 if (app.Environment.IsDevelopment())
 {
+    app.MapOpenApi();
+
     var uiDevServer = app.Configuration.GetValue<string>("UiDevServerUrl");
     if (!string.IsNullOrEmpty(uiDevServer))
     {

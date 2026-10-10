@@ -39,5 +39,18 @@ public sealed class TopologyTests(AppHostFixture fixture)
         Assert.False(string.IsNullOrEmpty(await fixture.App.GetConnectionStringAsync("casevanta", cancellationToken)));
     }
 
+    [Fact]
+    public async Task C07_The_openapi_document_describes_the_api_in_development()
+    {
+        using var client = fixture.CreateApiClient();
+
+        var document = await client.GetFromJsonAsync<System.Text.Json.JsonElement>("/openapi/v1.json", TestContext.Current.CancellationToken);
+
+        Assert.StartsWith("3.", document.GetProperty("openapi").GetString());
+        var paths = document.GetProperty("paths").EnumerateObject().Select(path => path.Name).ToArray();
+        Assert.Contains("/api/User", paths);
+        Assert.Contains("/api/verification/ping", paths);
+    }
+
     private sealed record UserInfo(bool IsAuthenticated);
 }
