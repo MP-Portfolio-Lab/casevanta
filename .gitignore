@@ -401,3 +401,6 @@ FodyWeavers.xsd
 # SQLite databases are generated at runtime; never commit them
 *.sqlite
 *.sqlite-journal
+
+# Angular build output served by the BFF; produced by the frontend build, never committed
+bff/server/wwwroot/

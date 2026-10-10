@@ -1,0 +1,12 @@
+# Version updates. Dependabot security updates are enabled separately (scripts/github-protect.sh)
+# and cover every manifest. npm and NuGet version updates are added once the workspace and the
+# backend solution reach their final locations.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]

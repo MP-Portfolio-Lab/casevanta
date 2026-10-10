@@ -1,0 +1,7 @@
+# Gitleaks configuration: the default rule set. Add narrowly scoped allowlists here (paths or
+# regexes for labelled, development-only fixtures) only when a finding is a confirmed false
+# positive, and explain each one.
+title = "casevanta"
+
+[extend]
+useDefault = true
