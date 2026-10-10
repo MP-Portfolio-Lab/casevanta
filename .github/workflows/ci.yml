@@ -10,6 +10,12 @@ on:
 permissions:
   contents: read
 
+env:
+  # AppHost builds resolve the Aspire CLI bundle (orchestrator and dashboard) from NuGet with
+  # `dnx aspire.cli@<SDK version>`: pinned and signature-checked, no install script needed.
+  AspireCliInvocationMode: dnxpinned
+  DOTNET_NOLOGO: 'true'
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -47,12 +53,30 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet restore backend/Casevanta.slnx
-      - name: Verify formatting (Casevanta projects; the inherited IdentityProvider is excluded until it is removed)
+      - name: Verify formatting (every Casevanta project; the inherited IdentityProvider is excluded until it is removed)
         run: |
-          dotnet format backend/src/Casevanta.Api/Casevanta.Api.csproj --verify-no-changes --no-restore
-          dotnet format backend/tests/Casevanta.Api.Tests/Casevanta.Api.Tests.csproj --verify-no-changes --no-restore
+          for project in backend/src/*/*.csproj backend/tests/*/*.csproj; do
+            dotnet format "$project" --verify-no-changes --no-restore
+          done
       - run: dotnet build backend/Casevanta.slnx --configuration Release --no-restore
-      - run: dotnet test --solution backend/Casevanta.slnx --configuration Release --no-build
+      - name: API and security tests (suite A)
+        run: dotnet test --project backend/tests/Casevanta.Api.Tests/Casevanta.Api.Tests.csproj --configuration Release --no-build
+      - name: Architecture rules
+        run: dotnet test --project backend/tests/Casevanta.Architecture.Tests/Casevanta.Architecture.Tests.csproj --configuration Release --no-build
+
+  integration:
+    name: integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Create the ASP.NET Core development certificate (served by the api; the tests do not require trust)
+        run: dotnet dev-certs https
+      - name: Distributed topology tests (suite C, Docker)
+        run: dotnet test --project backend/tests/Casevanta.AppHost.Tests/Casevanta.AppHost.Tests.csproj --configuration Release
 
   web:
     name: web

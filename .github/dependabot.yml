@@ -1,5 +1,5 @@
 # Version updates. Dependabot security updates are enabled separately (scripts/github-protect.sh)
-# and cover every manifest. NuGet version updates are added once the backend solution settles.
+# and cover every manifest.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -29,3 +29,18 @@ updates:
       # Angular 22 supports TypeScript >=6.0 <6.1 only; TypeScript moves with Angular upgrades.
       - dependency-name: typescript
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+
+  - package-ecosystem: nuget
+    directory: /backend
+    schedule:
+      interval: weekly
+    groups:
+      aspire:
+        patterns: ['Aspire.*']
+      opentelemetry:
+        patterns: ['OpenTelemetry*']
+      dotnet:
+        patterns: ['Microsoft.*', 'System.*']
+      tooling:
+        patterns: ['*']
+        update-types: ['minor', 'patch']

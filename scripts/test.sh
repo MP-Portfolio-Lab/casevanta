@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
 # Runs Casevanta's automated checks, fastest first.
 #
-#   scripts/test.sh            everything, including the browser journeys (suite B)
-#   scripts/test.sh --fast     skips the browser journeys
+#   scripts/test.sh            everything: suites A, C and B plus the frontend checks (needs Docker)
+#   scripts/test.sh --fast     no containers and no browser: suite A, architecture rules, frontend checks
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "== Backend: build and API/security tests (suite A)"
-dotnet test --solution backend/Casevanta.slnx
+echo "== Backend: API and security tests (suite A) and architecture rules"
+dotnet test --project backend/tests/Casevanta.Api.Tests/Casevanta.Api.Tests.csproj
+dotnet test --project backend/tests/Casevanta.Architecture.Tests/Casevanta.Architecture.Tests.csproj
 
 echo "== Frontend: formatting, lint, unit tests and production build"
 pnpm nx format:check --all
-pnpm nx run-many -t lint test build
+pnpm nx run-many -t lint test build --outputStyle=static
 
 if [ "${1:-}" != "--fast" ]; then
+  echo "== Distributed topology through Aspire (suite C)"
+  dotnet test --project backend/tests/Casevanta.AppHost.Tests/Casevanta.AppHost.Tests.csproj
+
   echo "== Browser journeys through the BFF (suite B)"
-  pnpm nx e2e staff-web-e2e
+  pnpm nx e2e staff-web-e2e --outputStyle=static
 fi
