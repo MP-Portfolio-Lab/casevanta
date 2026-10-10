@@ -53,7 +53,7 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet restore backend/Casevanta.slnx
-      - name: Verify formatting (every Casevanta project; the inherited IdentityProvider is excluded until it is removed)
+      - name: Verify formatting
         run: |
           for project in backend/src/*/*.csproj backend/tests/*/*.csproj; do
             dotnet format "$project" --verify-no-changes --no-restore
@@ -73,10 +73,46 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-      - name: Create the ASP.NET Core development certificate (served by the api; the tests do not require trust)
-        run: dotnet dev-certs https
+      - name: Trust the ASP.NET Core development certificate (the BFF and Keycloak serve HTTPS with it)
+        run: |
+          dotnet dev-certs https --trust
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
       - name: Distributed topology tests (suite C, Docker)
         run: dotnet test --project backend/tests/Casevanta.AppHost.Tests/Casevanta.AppHost.Tests.csproj --configuration Release
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Non-blocking until it has proven stable; then it becomes a required check.
+    continue-on-error: true
+    env:
+      NX_DAEMON: 'false'
+      NX_NO_CLOUD: 'true'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Trust the ASP.NET Core development certificate (the BFF and Keycloak serve HTTPS with it)
+        run: |
+          dotnet dev-certs https --trust
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
+      - name: Browser journeys (suite B) through the Aspire AppHost and Keycloak
+        run: pnpm nx e2e staff-web-e2e --outputStyle=static
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report
+          path: dist/.playwright/apps/staff-web-e2e
+          retention-days: 7
 
   web:
     name: web

@@ -16,9 +16,10 @@ Environment variables use `__` between sections, for example `OpenIDConnectSetti
 |---|---|---|---|---|
 | `ASPNETCORE_ENVIRONMENT` | Selects settings, dev proxy and diagnostics | `Development` (launch profile) | `Test` | `Production` |
 | Kestrel URL | Public origin of the BFF | `https://localhost:5001` (launch profile; Keycloak redirect URIs depend on it) | in-memory host `https://staff.casevanta.test` | set by the host |
-| `OpenIDConnectSettings:Authority` | Identity provider the BFF trusts; also allowed in CSP `form-action` | `https://localhost:44318` (inherited OpenIddict server) | same, with a static discovery document | HTTPS authority of the deployed identity provider |
-| `OpenIDConnectSettings:ClientId` | OIDC client of the BFF | `oidc-pkce-confidential` | same | per environment |
-| `OpenIDConnectSettings:ClientSecret` | Client secret for the token endpoint | sample value in `appsettings.json` (gap G8, replaced in the Keycloak step) | same | secret store only |
+| `OpenIDConnectSettings:Authority` | Identity provider the BFF trusts; its origin is allowed in CSP `form-action`. Required: the BFF refuses to start without it | `https://localhost:8080/realms/casevanta-workforce` (injected by the AppHost) | `https://identity.casevanta.test/realms/casevanta-workforce` with a static discovery document | HTTPS authority of the deployed Keycloak realm |
+| `OpenIDConnectSettings:ClientId` | OIDC client of the BFF | `staff-web` | `staff-web` | per environment |
+| `OpenIDConnectSettings:ClientSecret` | Client secret for PAR and the token endpoint | generated per machine by the AppHost parameter `staff-web-client-secret` | a fixed test value | secret store only |
+| `App:PublicOrigin` | Origin used to build `redirect_uri` and `post_logout_redirect_uri` (ADR-0010) | `https://localhost:5001` (injected by the AppHost) | unset (request origin); A22 sets `https://casevanta.example` | public HTTPS origin of the deployment |
 | `UiDevServerUrl` | Where `_Host.cshtml` fetches `index.html` in Development | `http://localhost:4201` (injected by the AppHost; `appsettings.Development.json` holds the same value for runs without Aspire) | not used | not used |
 | `ReverseProxy:*` | YARP routes to the Angular dev server (scripts, styles, `@vite`, `@fs`, HMR websocket, favicon) | cluster `staff-web`, destination `dev-server` at `http://localhost:4201/` | not mapped | not mapped |
 
@@ -31,9 +32,10 @@ also stops a stale local bundle from shadowing the dev server in Development.
 
 | Setting | Purpose | Value |
 |---|---|---|
-| Resources | What `scripts/dev.sh` starts | `postgres` with database `casevanta`, `identity-provider` (44318), `staff-web` (4201, after `pnpm install --frozen-lockfile`), `api` (5001) |
+| Resources | What `scripts/dev.sh` starts | `postgres` with database `casevanta`, `keycloak` (`https://localhost:8080`, realm import, development certificate), `staff-web` (4201, after `pnpm install --frozen-lockfile`), `api` (5001) |
+| Parameters | Generated once per machine and kept in the AppHost's user secrets | `staff-web-client-secret` (Keycloak client and BFF), `keycloak-password` (admin console user `admin`), `postgres-password` |
 | `Frontend:Enabled` | AppHost switch for the Angular dev server | `true`; suite C passes `false` so it needs neither Node.js nor pnpm |
-| Injected into `api` | Values the AppHost provides at start | `ConnectionStrings__casevanta`, `UiDevServerUrl`, the YARP destination address, `OTEL_EXPORTER_OTLP_ENDPOINT` |
+| Injected into `api` | Values the AppHost provides at start | `OpenIDConnectSettings__Authority`, `OpenIDConnectSettings__ClientSecret`, `App__PublicOrigin`, `ConnectionStrings__casevanta`, `UiDevServerUrl`, the YARP destination address, `OTEL_EXPORTER_OTLP_ENDPOINT` |
 | Health endpoints | Readiness and liveness | `/health` and `/alive`, mapped in Development only |
 | Dashboard | Logs, traces, metrics, resource state | `https://localhost:17032` (AppHost launch profile; the login token is printed on start) |
 | `AspireCliInvocationMode` | How AppHost builds find the Aspire CLI bundle (orchestrator and dashboard) | unset locally (the installed CLI on `PATH`); `dnxpinned` in CI (`dnx aspire.cli@<SDK version>`) |
@@ -54,9 +56,11 @@ also stops a stale local bundle from shadowing the dev server in Development.
 
 | Setting | Purpose | Default |
 |---|---|---|
-| `E2E_IDP` | Identity provider adapter the journeys use | `openiddict` |
+| `E2E_IDP` | Identity provider adapter the journeys use | `keycloak` |
 | `CI` | Disables reuse of already-running servers and enables one retry | unset locally |
 
-The journeys start the identity provider, the dev server and the BFF themselves
-(`playwright.config.mts`), or reuse ones that are already running locally. The inherited identity
-provider stores its data in `tmp/e2e/identity-provider.sqlite`, so every machine starts clean.
+The journeys start the whole topology through the AppHost (`playwright.config.mts`), or reuse a
+running `scripts/dev.sh`. Users come from the Keycloak realm import (`infra/keycloak/README.md`).
+On Linux, .NET only trusts the development certificate that the BFF and Keycloak serve after
+`dotnet dev-certs https --trust` and with `SSL_CERT_DIR` including `~/.aspnet/dev-certs/trust` (CI
+does both).
