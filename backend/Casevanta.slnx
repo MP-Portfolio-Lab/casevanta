@@ -1,7 +1,4 @@
 <Solution>
-  <Folder Name="/legacy/">
-    <Project Path="../IdentityProvider/IdentityProvider.csproj" />
-  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Casevanta.Api/Casevanta.Api.csproj" />
     <Project Path="src/Casevanta.AppHost/Casevanta.AppHost.csproj" />
