@@ -1,5 +1,8 @@
 using Microsoft.Extensions.Configuration;
 
+const string WorkforceRealm = "casevanta-workforce";
+const string PublicOrigin = "https://localhost:5001";
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // PostgreSQL for the business modules. No module uses it yet; the resource exists so that the
@@ -7,14 +10,33 @@ var builder = DistributedApplication.CreateBuilder(args);
 var postgres = builder.AddPostgres("postgres");
 var casevantaDb = postgres.AddDatabase("casevanta");
 
-// The inherited OpenIddict server (https://localhost:44318). Keycloak replaces it in the next step.
-var identityProvider = builder.AddProject<Projects.IdentityProvider>("identity-provider");
+// Secret of the staff-web OIDC client: generated once per machine, kept in the AppHost's user
+// secrets, and handed to both Keycloak (realm import placeholder) and the BFF.
+var staffWebClientSecret = builder.AddParameter(
+    "staff-web-client-secret",
+    new GenerateParameterDefault { MinLength = 32, Special = false },
+    secret: true,
+    persist: true);
 
-// The BFF and API host. Its launch profile keeps the public origin at https://localhost:5001,
-// which the identity provider's registered redirect URIs depend on.
+// Keycloak with the workforce realm (infra/keycloak/realms), served over HTTPS with the ASP.NET Core
+// development certificate. No data volume: every start re-imports the realm, so the JSON stays the
+// single source of development users and clients. The fixed port keeps the issuer and the browser's
+// Keycloak cookies stable across restarts.
+var keycloak = builder.AddKeycloak("keycloak", port: 8080)
+    .WithRealmImport("../../../infra/keycloak/realms")
+    .WithEnvironment("STAFF_WEB_CLIENT_SECRET", staffWebClientSecret)
+    .WithOtlpExporter();
+
+// The BFF and API host. App:PublicOrigin pins the redirect URIs registered in Keycloak, even when
+// integration tests run the api on a randomized port.
 var api = builder.AddProject<Projects.Casevanta_Api>("api")
     .WithReference(casevantaDb)
-    .WaitFor(identityProvider)
+    .WithReference(keycloak)
+    .WaitFor(keycloak)
+    // The Keycloak endpoint is named "http" but serves HTTPS once the development certificate is applied.
+    .WithEnvironment("OpenIDConnectSettings__Authority", ReferenceExpression.Create($"{keycloak.GetEndpoint("http")}/realms/{WorkforceRealm}"))
+    .WithEnvironment("OpenIDConnectSettings__ClientSecret", staffWebClientSecret)
+    .WithEnvironment("App__PublicOrigin", PublicOrigin)
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints();
 

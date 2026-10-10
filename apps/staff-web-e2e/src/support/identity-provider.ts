@@ -8,11 +8,9 @@ export interface IdentityProviderAdapter {
   readonly origin: string;
   /** Waits until the provider serves its discovery document. */
   waitUntilReady(timeoutMs?: number): Promise<void>;
-  /** Makes sure the user can sign in (registers it if the provider allows self-registration). */
-  ensureUser(page: Page, user: TestUser): Promise<void>;
   /** The display name the BFF reports for the user. */
   displayNameOf(user: TestUser): string;
-  /** Completes sign-in on the provider's pages, including consent, and returns to the BFF. */
+  /** Completes sign-in on the provider's pages and returns to the BFF. */
   signIn(page: Page, user: TestUser): Promise<void>;
   /** Completes sign-out on the provider's pages and returns to the BFF. */
   completeSignOut(page: Page): Promise<void>;
@@ -20,64 +18,42 @@ export interface IdentityProviderAdapter {
   expectCredentialsPrompt(page: Page): Promise<void>;
 }
 
-const openIddict: IdentityProviderAdapter = {
-  name: 'openiddict',
-  origin: 'https://localhost:44318',
+const realm = 'casevanta-workforce';
 
-  async waitUntilReady(timeoutMs = 120_000) {
-    await waitForDiscoveryDocument(`${this.origin}/.well-known/openid-configuration`, timeoutMs);
+const keycloak: IdentityProviderAdapter = {
+  name: 'keycloak',
+  origin: 'https://localhost:8080',
+
+  async waitUntilReady(timeoutMs = 180_000) {
+    await waitForDiscoveryDocument(
+      `${this.origin}/realms/${realm}/.well-known/openid-configuration`,
+      timeoutMs,
+    );
   },
 
-  async ensureUser(page, user) {
-    await page.goto(`${this.origin}/Identity/Account/Register`);
-    await page.locator('#Input_Email').fill(user.email);
-    await page.locator('#Input_Password').fill(user.password);
-    await page.locator('#Input_ConfirmPassword').fill(user.password);
-    await page.locator('#registerSubmit').click();
-    await page.waitForLoadState();
-    if (new URL(page.url()).pathname.endsWith('/Register')) {
-      // Registration is idempotent across runs: an existing account is fine, anything else is not.
-      await expect(page.locator('.validation-summary-errors, .text-danger').first()).toContainText(
-        /already taken/i,
-      );
-    }
-  },
-
-  displayNameOf: (user) => user.email,
+  displayNameOf: (user) => user.displayName,
 
   async signIn(page, user) {
     await page.waitForURL(
-      (url) => url.origin === this.origin && url.pathname.startsWith('/Identity/Account/Login'),
+      (url) => url.origin === this.origin && url.pathname.startsWith(`/realms/${realm}/`),
     );
-    await page.locator('#Input_Email').fill(user.email);
-    await page.locator('#Input_Password').fill(user.password);
-    await page.locator('#login-submit').click();
-
-    // The first sign-in asks for consent; later ones go straight back to the BFF.
-    const consent = page.locator('input[name="submit.Accept"]');
-    await expect(async () => {
-      const backAtBff = new URL(page.url()).origin === bff.origin;
-      expect(backAtBff || (await consent.isVisible())).toBe(true);
-    }).toPass({ timeout: 30_000 });
-    if (await consent.isVisible()) {
-      await consent.click();
-    }
+    await page.locator('#username').fill(user.username);
+    await page.locator('#password').fill(user.password);
+    await page.locator('#kc-login').click();
     await page.waitForURL(`${bff.origin}/`);
   },
 
   async completeSignOut(page) {
-    await page.waitForURL(
-      (url) => url.origin === this.origin && url.pathname === '/connect/logout',
-    );
-    await page.locator('input[name="Confirm"]').click();
+    // The BFF sends id_token_hint and a registered post-logout URI, so Keycloak signs out and
+    // redirects straight back without a confirmation page.
     await page.waitForURL(`${bff.origin}/`);
   },
 
   async expectCredentialsPrompt(page) {
     await page.waitForURL(
-      (url) => url.origin === this.origin && url.pathname.startsWith('/Identity/Account/Login'),
+      (url) => url.origin === this.origin && url.pathname.startsWith(`/realms/${realm}/`),
     );
-    await expect(page.locator('#Input_Password')).toBeVisible();
+    await expect(page.locator('#password')).toBeVisible();
   },
 };
 
@@ -101,9 +77,9 @@ async function waitForDiscoveryDocument(url: string, timeoutMs: number): Promise
   }
 }
 
-const adapters: Record<string, IdentityProviderAdapter> = { openiddict: openIddict };
+const adapters: Record<string, IdentityProviderAdapter> = { keycloak };
 
-const selected = process.env.E2E_IDP ?? 'openiddict';
+const selected = process.env['E2E_IDP'] ?? 'keycloak';
 const adapter = adapters[selected];
 if (!adapter) {
   throw new Error(`Unknown E2E_IDP '${selected}'. Known: ${Object.keys(adapters).join(', ')}`);

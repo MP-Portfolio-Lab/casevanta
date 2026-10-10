@@ -31,6 +31,7 @@ public sealed class LoginLogoutTests(BffFactory factory)
         var scopes = Value(query, "scope").Split(' ');
         Assert.Contains("openid", scopes);
         Assert.Contains("profile", scopes);
+        Assert.Contains("email", scopes);
 
         // The correlation and nonce cookies protect the callback; scripts must not read them.
         var protocolCookies = TestBrowser.SetCookies(response)
@@ -101,16 +102,17 @@ public sealed class LoginLogoutTests(BffFactory factory)
     }
 
     [Fact]
-    public async Task A12_Logout_accepts_requests_without_an_antiforgery_token_known_gap()
+    public async Task A12_Logout_rejects_requests_without_an_antiforgery_token()
     {
-        // Known gap (threat model T2): [IgnoreAntiforgeryToken] on Logout allows a cross-site forced logout.
+        // Gap G2 closed: another site cannot force a logout by posting to this endpoint.
         using var browser = factory.CreateBrowser();
         factory.SignIn(browser);
+        await browser.GetAsync("/");
 
         var response = await browser.PostAsync("/api/Account/Logout");
 
-        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Equal(factory.OidcOptions.Configuration!.EndSessionEndpoint, response.Headers.Location!.GetLeftPart(UriPartial.Path));
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.True(browser.Cookies.ContainsKey(BffFactory.SessionCookieName), "The session must survive a rejected logout.");
     }
 
     [Fact]

@@ -1,0 +1,168 @@
+{
+  "realm": "casevanta-workforce",
+  "displayName": "Casevanta Workforce (development)",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      {
+        "name": "employee",
+        "description": "Prepares customer applications and responds to remediation actions"
+      },
+      {
+        "name": "verifier",
+        "description": "Decides whether a submitted application can proceed"
+      },
+      {
+        "name": "inspector",
+        "description": "Inspects how a case was handled and records findings"
+      },
+      {
+        "name": "auditor",
+        "description": "Independently reviews cases and inspections"
+      },
+      {
+        "name": "administrator",
+        "description": "Manages configuration, teams and access"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "staff-web",
+      "name": "Casevanta staff web (BFF)",
+      "description": "Confidential client of the Casevanta BFF. The secret is generated per machine and injected by the Aspire AppHost.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${STAFF_WEB_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "rootUrl": "https://localhost:5001",
+      "baseUrl": "/",
+      "redirectUris": ["https://localhost:5001/signin-oidc"],
+      "webOrigins": ["https://localhost:5001"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "https://localhost:5001/signout-callback-oidc"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles as roles claim",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "ada.employee",
+      "email": "ada.employee@casevanta.test",
+      "firstName": "Ada",
+      "lastName": "Employee",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Casevanta-dev-1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["employee"]
+    },
+    {
+      "username": "victor.verifier",
+      "email": "victor.verifier@casevanta.test",
+      "firstName": "Victor",
+      "lastName": "Verifier",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Casevanta-dev-1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["employee", "verifier"]
+    },
+    {
+      "username": "iris.inspector",
+      "email": "iris.inspector@casevanta.test",
+      "firstName": "Iris",
+      "lastName": "Inspector",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Casevanta-dev-1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["employee", "inspector"]
+    },
+    {
+      "username": "aaron.auditor",
+      "email": "aaron.auditor@casevanta.test",
+      "firstName": "Aaron",
+      "lastName": "Auditor",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Casevanta-dev-1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["auditor"]
+    },
+    {
+      "username": "alice.admin",
+      "email": "alice.admin@casevanta.test",
+      "firstName": "Alice",
+      "lastName": "Administrator",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Casevanta-dev-1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["administrator"]
+    }
+  ]
+}

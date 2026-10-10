@@ -24,8 +24,8 @@ public class AccountController : ControllerBase
         return Challenge(properties);
     }
 
-    // [ValidateAntiForgeryToken] // not needed explicitly due the the Auto global definition.
-    [IgnoreAntiforgeryToken] // need to apply this to the form post request
+    // The global AutoValidateAntiforgeryToken filter protects this POST: the logout form posts the
+    // request token in __RequestVerificationToken, so another site cannot force a logout.
     [Authorize]
     [HttpPost("Logout")]
     public IActionResult Logout()

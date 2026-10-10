@@ -18,7 +18,7 @@ namespace Casevanta.Api.Tests.Infrastructure;
 /// identity provider is contacted. The identity provider endpoints are derived from the configured
 /// authority, which keeps these tests valid when the identity provider changes.
 /// </summary>
-public sealed class BffFactory : WebApplicationFactory<UserInfo>
+public class BffFactory : WebApplicationFactory<UserInfo>
 {
     /// <summary>
     /// The origin of every request the in-memory client sends. It is deliberately not localhost:
@@ -29,11 +29,22 @@ public sealed class BffFactory : WebApplicationFactory<UserInfo>
     /// <summary>The ID token stored in forged session tickets; logout must send it as id_token_hint.</summary>
     public const string TestIdToken = "test-id-token";
 
+    /// <summary>A Keycloak-shaped authority: the realm path makes origin and authority differ.</summary>
+    public const string TestAuthority = "https://identity.casevanta.test/realms/casevanta-workforce";
+
+    public const string TestClientId = "staff-web";
+
     static BffFactory()
     {
         // Outside Development, Pages/_Host.cshtml reads wwwroot/index.html relative to the process
         // working directory. The test project copies a fixture to that location.
         Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+
+        // The BFF reads its identity provider settings during startup; environment variables are the
+        // configuration source that is guaranteed to be visible that early. All tests share them.
+        Environment.SetEnvironmentVariable("OpenIDConnectSettings__Authority", TestAuthority);
+        Environment.SetEnvironmentVariable("OpenIDConnectSettings__ClientId", TestClientId);
+        Environment.SetEnvironmentVariable("OpenIDConnectSettings__ClientSecret", "test-client-secret");
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

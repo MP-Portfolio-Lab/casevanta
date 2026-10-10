@@ -38,9 +38,10 @@ public class UserController : ControllerBase
 
         if (claimsPrincipal?.Claims?.Any() ?? false)
         {
-            // Add just the name claim
+            // Only what the SPA needs: the display name and the roles. Tokens and other claims stay server-side.
             var claims = claimsPrincipal.FindAll(userInfo.NameClaimType)
-                                        .Select(u => new ClaimValue(userInfo.NameClaimType, u.Value))
+                                        .Concat(claimsPrincipal.FindAll(userInfo.RoleClaimType))
+                                        .Select(claim => new ClaimValue(claim.Type, claim.Value))
                                         .ToList();
 
             // Uncomment this code if you want to send additional claims to the client.

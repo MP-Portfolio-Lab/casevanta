@@ -2,6 +2,7 @@ using Casevanta.Api;
 using Casevanta.Api.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Logging;
@@ -22,6 +23,16 @@ var services = builder.Services;
 var configuration = builder.Configuration;
 
 var identityProviderAuthority = configuration["OpenIDConnectSettings:Authority"];
+if (string.IsNullOrWhiteSpace(identityProviderAuthority))
+{
+    throw new InvalidOperationException(
+        "OpenIDConnectSettings:Authority is not configured. Start the application through the Aspire AppHost "
+        + "(scripts/dev.sh) or provide the setting; see docs/architecture/configuration.md.");
+}
+
+// CSP form-action must allow the identity provider's origin: the logout form posts to the BFF, which
+// redirects to the provider's end-session endpoint. A source with a path would only match that path.
+var identityProviderOrigin = new Uri(identityProviderAuthority).GetLeftPart(UriPartial.Authority);
 
 services.AddSecurityHeaderPolicies()
     .SetPolicySelector(ctx =>
@@ -32,7 +43,7 @@ services.AddSecurityHeaderPolicies()
         }
 
         return SecurityHeadersDefinitions.GetHeaderPolicyCollection(
-            builder.Environment.IsDevelopment(), identityProviderAuthority);
+            builder.Environment.IsDevelopment(), identityProviderOrigin);
     });
 
 services.AddAntiforgery(options =>
@@ -46,29 +57,53 @@ services.AddAntiforgery(options =>
 services.AddHttpClient();
 services.AddOptions();
 
+// Session cookies stay valid across restarts and instances of the same application only if they
+// share keys; key storage for deployed environments is described in ADR-0008.
+services.AddDataProtection().SetApplicationName("casevanta");
+
 services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
 })
-.AddCookie()
+.AddCookie(options =>
+{
+    // A working day; activity extends it. Tokens are not refreshed yet (threat model G3).
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+})
 .AddOpenIdConnect(options =>
 {
     configuration.GetSection("OpenIDConnectSettings").Bind(options);
-    options.Authority = configuration["OpenIDConnectSettings:Authority"];
-    options.ClientId = configuration["OpenIDConnectSettings:ClientId"];
-    options.ClientSecret = configuration["OpenIDConnectSettings:ClientSecret"];
 
     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.ResponseType = OpenIdConnectResponseType.Code;
+    // Metadata and tokens only over HTTPS, in every environment (the development Keycloak serves HTTPS too).
+    options.RequireHttpsMetadata = true;
+    options.Scope.Add("email");
 
+    // Tokens stay server-side in the encrypted session; this also makes logout send id_token_hint.
     options.SaveTokens = true;
     options.GetClaimsFromUserInfoEndpoint = true;
+    options.MapInboundClaims = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        NameClaimType = "name"
+        NameClaimType = "name",
+        RoleClaimType = "roles",
     };
+
+    options.UsePublicOrigin();
 });
+
+services.AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.Verifier, policy => policy
+        // API callers get 401/403 from the cookie scheme instead of a redirect to the identity provider.
+        .AddAuthenticationSchemes(CookieAuthenticationDefaults.AuthenticationScheme)
+        .RequireAuthenticatedUser()
+        .RequireRole(Roles.Verifier));
 
 services.AddControllersWithViews(options =>
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));

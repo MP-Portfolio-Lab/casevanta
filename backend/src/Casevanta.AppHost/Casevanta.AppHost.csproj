@@ -10,13 +10,12 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.JavaScript" />
+    <PackageReference Include="Aspire.Hosting.Keycloak" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../Casevanta.Api/Casevanta.Api.csproj" />
-    <!-- Inherited OpenIddict server; replaced by Keycloak in the next step. -->
-    <ProjectReference Include="../../../IdentityProvider/IdentityProvider.csproj" />
   </ItemGroup>
 
 </Project>
