@@ -21,6 +21,8 @@ Environment variables use `__` between sections, for example `OpenIDConnectSetti
 | `OpenIDConnectSettings:ClientSecret` | Client secret for PAR and the token endpoint | generated per machine by the AppHost parameter `staff-web-client-secret` | a fixed test value | secret store only |
 | `App:PublicOrigin` | Origin used to build `redirect_uri` and `post_logout_redirect_uri` (ADR-0010) | `https://localhost:5001` (injected by the AppHost) | unset (request origin); A22 sets `https://casevanta.example` | public HTTPS origin of the deployment |
 | `UiDevServerUrl` | Where `_Host.cshtml` fetches `index.html` in Development | `http://localhost:4201` (injected by the AppHost; `appsettings.Development.json` holds the same value for runs without Aspire) | not used | not used |
+| API errors | Error contract of every `/api` endpoint | RFC 9457 problem details (`application/problem+json`) | same | same, without internal details |
+| OpenAPI document | Describes the API | `/openapi/v1.json` | not served | not served |
 | `ReverseProxy:*` | YARP routes to the Angular dev server (scripts, styles, `@vite`, `@fs`, HMR websocket, favicon) | cluster `staff-web`, destination `dev-server` at `http://localhost:4201/` | not mapped | not mapped |
 
 Outside Development, `Pages/_Host.cshtml` reads `wwwroot/index.html` from the working directory.
@@ -39,6 +41,13 @@ also stops a stale local bundle from shadowing the dev server in Development.
 | Health endpoints | Readiness and liveness | `/health` and `/alive`, mapped in Development only |
 | Dashboard | Logs, traces, metrics, resource state | `https://localhost:17032` (AppHost launch profile; the login token is printed on start) |
 | `AspireCliInvocationMode` | How AppHost builds find the Aspire CLI bundle (orchestrator and dashboard) | unset locally (the installed CLI on `PATH`); `dnxpinned` in CI (`dnx aspire.cli@<SDK version>`) |
+
+## Development data
+
+PostgreSQL and Keycloak run without volumes: every start gives an empty `casevanta` database and a
+freshly imported realm. `scripts/reset-dev-data.sh` stops the AppHost and clears local test output
+(`--secrets` also regenerates the AppHost parameters). Schema migrations and synthetic business seed
+data arrive with the first module (ADR-0009).
 
 ## Frontend workspace
 
