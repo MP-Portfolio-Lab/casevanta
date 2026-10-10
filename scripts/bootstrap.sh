@@ -14,7 +14,7 @@ command -v dotnet >/dev/null || fail "dotnet is missing: install the .NET SDK pi
 dotnet --version >/dev/null 2>&1 || fail "The .NET SDK pinned in global.json is not installed (dotnet --list-sdks)"
 ok ".NET SDK $(dotnet --version)"
 
-command -v node >/dev/null || fail "Node.js is missing: install the version in .nvmrc (Node 22.22.3+, 24.15+ or 26+)"
+command -v node >/dev/null || fail "Node.js is missing: install the version in frontend/.nvmrc (Node 22.22.3+, 24.15+ or 26+)"
 node -e '
   const [major, minor, patch] = process.versions.node.split(".").map(Number);
   const supported = (major === 22 && (minor > 22 || (minor === 22 && patch >= 3)))
@@ -43,9 +43,9 @@ else
 fi
 
 echo "Installing dependencies"
-pnpm install --frozen-lockfile
+pnpm -C frontend install --frozen-lockfile
 dotnet restore backend/Casevanta.slnx
-pnpm exec playwright install chromium
+pnpm -C frontend exec playwright install chromium
 
 echo "Configuring the development environment"
 if dotnet dev-certs https --check --trust >/dev/null 2>&1; then
@@ -53,7 +53,7 @@ if dotnet dev-certs https --check --trust >/dev/null 2>&1; then
 else
   dotnet dev-certs https --trust
 fi
-pnpm exec lefthook install
+pnpm -C frontend exec lefthook install
 ok "git hooks installed (gitleaks and Prettier on pre-commit)"
 
 echo

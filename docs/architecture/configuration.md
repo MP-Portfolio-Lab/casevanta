@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Updated | 2026-10-10 |
+| Updated | 2026-10-11 |
 | Scope | Every setting a developer or deployment can change, where it lives, and its value per environment |
 
 ASP.NET Core reads settings from `appsettings.json`, then `appsettings.{Environment}.json`, user
@@ -26,7 +26,7 @@ Environment variables use `__` between sections, for example `OpenIDConnectSetti
 | `ReverseProxy:*` | YARP routes to the Angular dev server (scripts, styles, `@vite`, `@fs`, HMR websocket, favicon) | cluster `staff-web`, destination `dev-server` at `http://localhost:4201/` | not mapped | not mapped |
 
 Outside Development, `Pages/_Host.cshtml` reads `wwwroot/index.html` from the working directory.
-Packaging the Angular build (`dist/apps/staff-web/browser`) into that folder or a container image is
+Packaging the Angular build (`frontend/dist/apps/staff-web/browser`) into that folder or a container image is
 part of the deployment work and is not automated yet. Keeping build output out of the API project
 also stops a stale local bundle from shadowing the dev server in Development.
 
@@ -34,7 +34,7 @@ also stops a stale local bundle from shadowing the dev server in Development.
 
 | Setting | Purpose | Value |
 |---|---|---|
-| Resources | What `scripts/dev.sh` starts | `postgres` with database `casevanta`, `keycloak` (`https://localhost:8080`, realm import, development certificate), `staff-web` (4201, after `pnpm install --frozen-lockfile`), `api` (5001) |
+| Resources | What `scripts/dev.sh` starts | `postgres` with database `casevanta`, `keycloak` (`https://localhost:8080`, realm import, development certificate), `staff-web` (4201, from `frontend`, after `pnpm install --frozen-lockfile`), `api` (5001) |
 | Parameters | Generated once per machine and kept in the AppHost's user secrets | `staff-web-client-secret` (Keycloak client and BFF), `keycloak-password` (admin console user `admin`), `postgres-password` |
 | `Frontend:Enabled` | AppHost switch for the Angular dev server | `true`; suite C passes `false` so it needs neither Node.js nor pnpm |
 | Injected into `api` | Values the AppHost provides at start | `OpenIDConnectSettings__Authority`, `OpenIDConnectSettings__ClientSecret`, `App__PublicOrigin`, `ConnectionStrings__casevanta`, `UiDevServerUrl`, the YARP destination address, `OTEL_EXPORTER_OTLP_ENDPOINT` |
@@ -53,23 +53,25 @@ data arrive with the first module (ADR-0009).
 
 | Setting | Where | Value |
 |---|---|---|
-| Node.js | `.nvmrc`, `package.json` `engines` | 22 (22.22.3+), 24.15+ or 26+ (Angular 22 support range) |
-| pnpm | `package.json` `packageManager` | 12.10.1; build scripts only for the packages listed in `pnpm-workspace.yaml` |
-| TypeScript | `package.json` | `~6.0.3`; Angular 22 supports `>=6.0 <6.1` only |
-| Dev server | `apps/staff-web/project.json` (`serve`) | `http://localhost:4201` |
-| Production build output | `apps/staff-web/project.json` (`build`) | `dist/apps/staff-web` |
-| CSP nonce | `apps/staff-web/src/index.html` | `**PLACEHOLDER_NONCE_SERVER**`, replaced per request by the BFF |
-| UI components | `components.json`, `libs/shared/ui` | spartan-ng helm components owned in the repository (`@spartan-ng/helm/*`) |
+| Node.js | `frontend/.nvmrc`, `frontend/package.json` `engines` | 22 (22.22.3+), 24.15+ or 26+ (Angular 22 support range) |
+| pnpm | `frontend/package.json` `packageManager` | 12.10.1; build scripts only for the packages listed in `frontend/pnpm-workspace.yaml` |
+| TypeScript | `frontend/package.json` | `~6.0.3`; Angular 22 supports `>=6.0 <6.1` only |
+| Dev server | `frontend/apps/staff-web/project.json` (`serve`) | `http://localhost:4201` |
+| Production build output | `frontend/apps/staff-web/project.json` (`build`) | `frontend/dist/apps/staff-web` |
+| CSP nonce | `frontend/apps/staff-web/src/index.html` | `**PLACEHOLDER_NONCE_SERVER**`, replaced per request by the BFF |
+| UI components | `frontend/components.json`, `frontend/libs/shared/ui` | spartan-ng helm components owned in the repository (`@spartan-ng/helm/*`) |
+| Nx workspace root | `frontend/nx.json`; `nxConsole.nxWorkspacePath` in `.vscode/settings.json` | `frontend`. Nx Console exports it as `NX_WORKSPACE_ROOT_PATH` to processes started from the editor, and Nx then prefers that value to its own lookup |
+| Formatting | `.prettierrc`, `.prettierignore` and `.gitignore` at the repository root | Prettier over the whole repository: `pnpm -C frontend format` or `format:check`, the pre-commit hook and the `web` CI job. `frontend/.prettierignore` only keeps `nx format` away from the lockfile |
 
-## Browser journeys (`apps/staff-web-e2e`)
+## Browser journeys (`frontend/apps/staff-web-e2e`)
 
 | Setting | Purpose | Default |
 |---|---|---|
 | `E2E_IDP` | Identity provider adapter the journeys use | `keycloak` |
 | `CI` | Disables reuse of already-running servers and enables one retry | unset locally |
 
-The journeys start the whole topology through the AppHost (`playwright.config.mts`), or reuse a
-running `scripts/dev.sh`. Users come from the Keycloak realm import (`infra/keycloak/README.md`).
+The journeys start the whole topology through the AppHost (`playwright.config.mts` runs it from the
+repository root), or reuse a running `scripts/dev.sh`. Users come from the Keycloak realm import (`infra/keycloak/README.md`).
 On Linux, .NET only trusts the development certificate that the BFF and Keycloak serve after
 `dotnet dev-certs https --trust` and with `SSL_CERT_DIR` including `~/.aspnet/dev-certs/trust` (CI
 does both).

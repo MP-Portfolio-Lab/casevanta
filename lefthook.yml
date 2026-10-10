@@ -1,4 +1,5 @@
-# Git hooks, installed by scripts/bootstrap.sh (`pnpm exec lefthook install`).
+# Git hooks, installed by scripts/bootstrap.sh (`pnpm exec lefthook install` in frontend/). Hooks run
+# from the repository root, so Prettier reads the root .gitignore and .prettierignore.
 pre-commit:
   parallel: true
   commands:
@@ -6,5 +7,5 @@ pre-commit:
       run: gitleaks git --pre-commit --staged --redact --no-banner .
     prettier:
       glob: '*.{ts,mts,mjs,js,json,html,css,yml,yaml}'
-      run: pnpm exec prettier --write --ignore-unknown --log-level warn {staged_files}
+      run: frontend/node_modules/.bin/prettier --write --ignore-unknown --log-level warn {staged_files}
       stage_fixed: true

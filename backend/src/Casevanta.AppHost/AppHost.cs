@@ -40,11 +40,12 @@ var api = builder.AddProject<Projects.Casevanta_Api>("api")
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints();
 
-// The Angular dev server, proxied by the BFF in Development. Integration tests pass
-// --Frontend:Enabled=false so that they need neither Node.js nor pnpm.
+// The Angular dev server, run from the Nx workspace in frontend/ and proxied by the BFF in
+// Development. Integration tests pass --Frontend:Enabled=false so that they need neither Node.js
+// nor pnpm.
 if (builder.Configuration.GetValue("Frontend:Enabled", defaultValue: true))
 {
-    var staffWeb = builder.AddJavaScriptApp("staff-web", "../../..", runScriptName: "staff-web:serve")
+    var staffWeb = builder.AddJavaScriptApp("staff-web", "../../../frontend", runScriptName: "staff-web:serve")
         .WithPnpm(installArgs: ["--frozen-lockfile"])
         .WithHttpEndpoint(port: 4201, env: "PORT")
         .WithEnvironment("NX_DAEMON", "false")

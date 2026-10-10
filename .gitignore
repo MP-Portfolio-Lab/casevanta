@@ -5,8 +5,8 @@ tmp/
 out-tsc/
 coverage/
 .angular/
-.nx/cache/
-.nx/workspace-data/
+**/.nx/cache/
+**/.nx/workspace-data/
 
 # The BFF serves the Angular build from wwwroot only in packaged deployments; never commit it
 backend/src/Casevanta.Api/wwwroot/
@@ -49,6 +49,7 @@ blob-report/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 *.swp
 *~
 .DS_Store

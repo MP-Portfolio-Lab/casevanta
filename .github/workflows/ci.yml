@@ -89,16 +89,22 @@ jobs:
     env:
       NX_DAEMON: 'false'
       NX_NO_CLOUD: 'true'
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
       - uses: actions/setup-node@v7
         with:
-          node-version-file: .nvmrc
+          node-version-file: frontend/.nvmrc
           cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - name: Trust the ASP.NET Core development certificate (the BFF and Keycloak serve HTTPS with it)
@@ -113,7 +119,7 @@ jobs:
         if: failure()
         with:
           name: playwright-report
-          path: dist/.playwright/apps/staff-web-e2e
+          path: frontend/dist/.playwright/apps/staff-web-e2e
           retention-days: 7
 
   web:
@@ -123,13 +129,20 @@ jobs:
     env:
       NX_DAEMON: 'false'
       NX_NO_CLOUD: 'true'
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
       - uses: actions/setup-node@v7
         with:
-          node-version-file: .nvmrc
+          node-version-file: frontend/.nvmrc
           cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm nx format:check --all
+      - name: Formatting of the whole repository (Prettier)
+        run: pnpm format:check
       - run: pnpm nx run-many -t lint test build

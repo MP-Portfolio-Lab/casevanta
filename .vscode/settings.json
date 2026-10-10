@@ -1,0 +1,5 @@
+{
+  "nxConsole.nxWorkspacePath": "frontend",
+  "eslint.workingDirectories": [{ "directory": "frontend", "changeProcessCWD": true }],
+  "prettier.prettierPath": "./frontend/node_modules/prettier"
+}

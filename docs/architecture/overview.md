@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Status | Cleaning phase: inherited BFF restructured, Aspire orchestration in place, Keycloak as the workforce identity provider |
-| Updated | 2026-10-10 |
+| Updated | 2026-10-11 |
 
 ## Local topology
 
@@ -34,8 +34,9 @@ flowchart LR
 | `backend/src/Casevanta.Api` | Composition root: the BFF (cookie session, OIDC, antiforgery, CSP nonce, development proxy) and the API endpoints. Business modules will plug in here without depending on it (ADR-0005). |
 | `backend/src/Casevanta.AppHost` | Aspire orchestration of the local topology. Not a runtime dependency of the API (architecture rule AR01). |
 | `backend/src/Casevanta.ServiceDefaults` | OpenTelemetry, health checks, service discovery and HTTP resilience for every .NET service. |
-| `apps/staff-web` | Angular 22 staff SPA (zoneless, signals, spartan-ng on Tailwind 4). |
-| `libs/shared/ui` | spartan-ng helm components owned by the repository. |
+| `frontend` | Nx and pnpm workspace root for every Angular application and library (ADR-0012). |
+| `frontend/apps/staff-web` | Angular 22 staff SPA (zoneless, signals, spartan-ng on Tailwind 4). |
+| `frontend/libs/shared/ui` | spartan-ng helm components owned by the repository. |
 | `infra/keycloak/realms` | Keycloak realm import: roles, the `staff-web` client and the development users. |
 
 ## Test layers
@@ -44,9 +45,9 @@ flowchart LR
 |---|---|---|---|---|
 | ASP.NET Core integration | A, `backend/tests/Casevanta.Api.Tests` | BFF behaviour in memory: access rules, antiforgery, hardening headers, OIDC challenge and logout | .NET | `backend` |
 | Architecture rules | AR, `backend/tests/Casevanta.Architecture.Tests` | Dependency rules from ADR-0005 | .NET | `backend` |
-| Frontend unit | Vitest, `apps/staff-web` | Interceptor origin rules, cookie reader, shell and home contracts | Node.js | `web` |
+| Frontend unit | Vitest, `frontend/apps/staff-web` | Interceptor origin rules, cookie reader, shell and home contracts | Node.js | `web` |
 | Distributed integration | C, `backend/tests/Casevanta.AppHost.Tests` | The AppHost starts the real topology (containers included); health and contract | Docker | `integration` |
-| Browser journeys | B, `apps/staff-web-e2e` | Real browser through Keycloak, the BFF and the SPA: sign-in, protected calls, roles, sign-out, CSP guard | Docker, Node.js | `e2e` |
+| Browser journeys | B, `frontend/apps/staff-web-e2e` | Real browser through Keycloak, the BFF and the SPA: sign-in, protected calls, roles, sign-out, CSP guard | Docker, Node.js | `e2e` |
 
 The API stays testable without Aspire: suite A hosts it in memory, and suite C is the only layer
 that starts the distributed application.

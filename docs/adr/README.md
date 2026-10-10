@@ -16,3 +16,4 @@ acceptance; a later record supersedes an earlier one instead.
 | [0009](0009-development-data-lifecycle.md) | Disposable, synthetic development data | Accepted |
 | [0010](0010-public-origin-and-forwarded-headers.md) | Configured public origin; forwarded headers only behind a known proxy | Accepted |
 | [0011](0011-ui-component-strategy.md) | spartan-ng components owned in the repository, on Tailwind CSS | Accepted |
+| [0012](0012-repository-layout.md) | One folder per stack; the Nx workspace lives in `frontend/` | Accepted |

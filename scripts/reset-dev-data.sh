@@ -15,8 +15,8 @@ echo "Stopping the AppHost, if it is running"
 aspire stop --apphost "$apphost" --non-interactive --nologo >/dev/null 2>&1 || true
 
 echo "Removing local test output and caches"
-rm -rf tmp dist/.playwright coverage
-pnpm nx reset >/dev/null
+rm -rf frontend/tmp frontend/dist/.playwright frontend/coverage
+pnpm -C frontend nx reset >/dev/null
 
 if [ "${1:-}" = "--secrets" ]; then
   echo "Clearing the AppHost's generated parameters"

@@ -3,13 +3,13 @@
 | | |
 |---|---|
 | Status | Written before any change to the inherited BFF; updated after each migration step |
-| Updated | 2026-10-10 |
+| Updated | 2026-10-11 |
 | Scope | The ASP.NET Core BFF (`backend/src/Casevanta.Api`), the staff SPA it serves, and the identity provider it trusts (Keycloak, realm `casevanta-workforce`; the inherited OpenIddict server until 2026-10-10) |
 | Method | Data flows and trust boundaries, then threats per boundary (STRIDE category in brackets). Every mitigation names the automated test that keeps it true. |
 
 Test IDs refer to `backend/tests/Casevanta.Api.Tests` (A, in-memory API and header tests),
-`apps/staff-web-e2e` (B, browser journeys) and `backend/tests/Casevanta.AppHost.Tests` (C, the real
-topology with Keycloak). Update this document whenever a test ID, a mitigation or a gap changes.
+`frontend/apps/staff-web-e2e` (B, browser journeys) and `backend/tests/Casevanta.AppHost.Tests` (C,
+the real topology with Keycloak). Update this document whenever a test ID, a mitigation or a gap changes.
 
 ## System and trust boundaries
 

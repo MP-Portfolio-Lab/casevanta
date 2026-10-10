@@ -1,15 +1,7 @@
-# Generated output and caches
-/dist
-/coverage
-/tmp
-/.nx/cache
-/.nx/workspace-data
-.angular
-**/bin
-**/obj
-**/TestResults
+# Prettier formats the whole repository from the root and also skips everything in .gitignore:
+# `pnpm format` (frontend/package.json) passes both files, and the pre-commit hook runs from the
+# repository root, where Prettier reads both by default.
 pnpm-lock.yaml
 
 # Markdown prose is formatted by hand
 *.md
-

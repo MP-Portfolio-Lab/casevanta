@@ -26,8 +26,8 @@ Prerequisites (`scripts/bootstrap.sh` checks them):
 | Tool | Version |
 |---|---|
 | .NET SDK | 10.0.401 or later in the 10.0 line (`global.json`) |
-| Node.js | 22.22.3+, 24.15+ or 26+ (`.nvmrc`; Angular 22's supported range) |
-| pnpm | 12 (`packageManager` in `package.json`) |
+| Node.js | 22.22.3+, 24.15+ or 26+ (`frontend/.nvmrc`; Angular 22's supported range) |
+| pnpm | 12 (`packageManager` in `frontend/package.json`) |
 | Docker | Running |
 | Aspire CLI | 13.6.1 or later |
 | gitleaks | Any recent version (pre-commit secret scan) |
@@ -73,18 +73,29 @@ Details are in the [architecture overview](docs/architecture/overview.md), the
 
 ## Repository layout
 
+Each stack has its own folder and toolchain root. The repository root holds only what the stacks
+share: CI, git hooks, formatting rules, infrastructure, scripts and documentation
+([ADR-0012](docs/adr/0012-repository-layout.md)).
+
 | Path | Contents |
 |---|---|
-| `apps/staff-web` | Angular 22 staff application (zoneless, signals, spartan-ng on Tailwind CSS 4) |
-| `apps/staff-web-e2e` | Playwright browser journeys (suite B) |
-| `libs/shared/ui` | spartan-ng components owned by the repository |
+| `backend` | .NET solution `Casevanta.slnx`, shared build settings and central package versions |
 | `backend/src/Casevanta.Api` | BFF and API host, the composition root for business modules |
 | `backend/src/Casevanta.AppHost` | Aspire orchestration of the local topology |
 | `backend/src/Casevanta.ServiceDefaults` | OpenTelemetry, health checks, service discovery and resilience |
 | `backend/tests` | API and security tests (suite A), distributed tests (suite C) and architecture rules |
+| `frontend` | pnpm and Nx workspace: `package.json`, `nx.json` and the TypeScript, ESLint and Tailwind configuration |
+| `frontend/apps/staff-web` | Angular 22 staff application (zoneless, signals, spartan-ng on Tailwind CSS 4) |
+| `frontend/apps/staff-web-e2e` | Playwright browser journeys (suite B) |
+| `frontend/libs/shared/ui` | spartan-ng components owned by the repository |
 | `infra/keycloak` | Keycloak realm import and development users |
 | `docs` | Product plan, architecture, threat model and ADRs |
 | `scripts` | Bootstrap, run, test, reset and repository protection scripts |
+
+Run `dotnet` from the repository root. The root `global.json` pins the SDK and the test runner for
+the whole repository. Run `pnpm` and `nx` inside `frontend`, or from the root with `pnpm -C frontend`.
+Prettier covers the whole repository: `pnpm -C frontend format` fixes formatting, and the
+pre-commit hook does the same for staged files.
 
 ## Tests
 
@@ -92,15 +103,16 @@ Details are in the [architecture overview](docs/architecture/overview.md), the
 |---|---|---|
 | A: API and security | BFF behaviour in memory: access rules, antiforgery, headers, OIDC, problem details | `dotnet test --project backend/tests/Casevanta.Api.Tests/Casevanta.Api.Tests.csproj` |
 | Architecture rules | Module and layering rules | `dotnet test --project backend/tests/Casevanta.Architecture.Tests/Casevanta.Architecture.Tests.csproj` |
-| Frontend unit | Interceptor, cookie reader, shell and page contracts | `pnpm nx test staff-web` |
+| Frontend unit | Interceptor, cookie reader, shell and page contracts | `pnpm -C frontend nx test staff-web` |
 | C: distributed | The real topology with Keycloak and PostgreSQL (Docker) | `dotnet test --project backend/tests/Casevanta.AppHost.Tests/Casevanta.AppHost.Tests.csproj` |
-| B: browser journeys | Sign-in, protected calls, roles, sign-out and CSP checks in a real browser (Docker) | `pnpm nx e2e staff-web-e2e` |
+| B: browser journeys | Sign-in, protected calls, roles, sign-out and CSP checks in a real browser (Docker) | `pnpm -C frontend nx e2e staff-web-e2e` |
 
 CI (`.github/workflows/ci.yml`) runs five jobs on every push and pull request:
 
 - `secrets` scans the full history with gitleaks.
 - `backend` checks formatting and runs suite A and the architecture rules.
-- `web` runs format, lint, unit tests and the production build.
+- `web` checks the formatting of the whole repository, then runs lint, unit tests and the production
+  build.
 - `integration` runs suite C.
 - `e2e` runs suite B.
 

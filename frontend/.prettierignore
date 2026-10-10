@@ -1,0 +1,5 @@
+# `nx format` runs Prettier from this folder, where Prettier looks for its ignore files. The
+# repository-wide list is ../.prettierignore; `pnpm format` and `pnpm format:check` use it and cover
+# the whole repository.
+pnpm-lock.yaml
+*.md

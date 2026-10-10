@@ -1,4 +1,4 @@
-import { workspaceRoot } from '@nx/devkit';
+import { resolve } from 'node:path';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { defineConfig, devices } from '@playwright/test';
 
@@ -10,6 +10,11 @@ import { defineConfig, devices } from '@playwright/test';
  * Nx can load it with Node's native TypeScript stripping.
  */
 const bffOrigin = 'https://localhost:5001';
+
+// The AppHost command runs from the repository root, which holds this Nx workspace (frontend/) and
+// the .NET solution side by side. Derived from this file's location rather than Nx's workspaceRoot,
+// which an editor extension can override through NX_WORKSPACE_ROOT_PATH.
+const repositoryRoot = resolve(import.meta.dirname, '../../..');
 
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
@@ -29,7 +34,7 @@ export default defineConfig({
   webServer: {
     name: 'aspire',
     command: 'dotnet run --project backend/src/Casevanta.AppHost/Casevanta.AppHost.csproj',
-    cwd: workspaceRoot,
+    cwd: repositoryRoot,
     url: `${bffOrigin}/`,
     ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env['CI'],

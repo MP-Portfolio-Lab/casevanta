@@ -15,8 +15,8 @@
     "test": "nx run-many -t test",
     "lint": "nx run-many -t lint",
     "e2e": "nx e2e staff-web-e2e",
-    "format": "nx format:write --all",
-    "format:check": "nx format:check --all",
+    "format": "prettier --write --list-different --ignore-path ../.gitignore --ignore-path ../.prettierignore ..",
+    "format:check": "prettier --check --ignore-path ../.gitignore --ignore-path ../.prettierignore ..",
     "staff-web:serve": "nx serve staff-web --port ${PORT:-4201}"
   },
   "dependencies": {
