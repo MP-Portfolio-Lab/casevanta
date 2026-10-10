@@ -1,0 +1,43 @@
+<div class="grid gap-4 md:grid-cols-2">
+  <section hlmCard>
+    <div hlmCardHeader>
+      <h2 hlmCardTitle>Session</h2>
+      <p hlmCardDescription>What the BFF reports about the current user.</p>
+    </div>
+    <div hlmCardContent>
+      <pre class="overflow-x-auto rounded-md bg-muted p-3 text-xs" data-testid="user-profile">{{
+        session.profile() | json
+      }}</pre>
+    </div>
+  </section>
+
+  @if (session.isAuthenticated()) {
+    <section hlmCard>
+      <div hlmCardHeader>
+        <h2 hlmCardTitle>Protected API</h2>
+        <p hlmCardDescription>
+          A cookie-authenticated call that must also carry the antiforgery header.
+        </p>
+      </div>
+      <div hlmCardContent class="flex flex-col items-start gap-3">
+        <button
+          hlmBtn
+          variant="secondary"
+          type="button"
+          data-testid="direct-api"
+          (click)="loadDirectApiData()"
+        >
+          <ng-icon name="lucideDatabase" />
+          Get direct data
+        </button>
+        @if (directApiData(); as data) {
+          <ul class="list-disc pl-5 text-sm" data-testid="direct-api-data">
+            @for (item of data; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+  }
+</div>

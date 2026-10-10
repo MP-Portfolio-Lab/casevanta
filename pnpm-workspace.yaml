@@ -1,0 +1,10 @@
+# pnpm settings. Dependency build scripts are blocked unless listed here after review:
+# nx needs its postinstall; the native packages ship prebuilt binaries, and lefthook hooks are
+# installed explicitly by scripts/bootstrap.sh.
+allowBuilds:
+  nx: true
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false
+  '@parcel/watcher': false
+  lefthook: false

@@ -58,15 +58,16 @@ jobs:
     name: web
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: bff/ui
+    env:
+      NX_DAEMON: 'false'
+      NX_NO_CLOUD: 'true'
     steps:
       - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: bff/ui/package-lock.json
-      - run: npm ci --no-audit --no-fund
-      - run: npm run build
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx format:check --all
+      - run: pnpm nx run-many -t lint test build

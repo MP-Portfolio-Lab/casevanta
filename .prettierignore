@@ -1,0 +1,17 @@
+# Generated output and caches
+/dist
+/coverage
+/tmp
+/.nx/cache
+/.nx/workspace-data
+.angular
+**/bin
+**/obj
+**/TestResults
+pnpm-lock.yaml
+
+# Markdown prose is formatted by hand
+*.md
+
+# The inherited identity provider is removed in a later step
+/IdentityProvider

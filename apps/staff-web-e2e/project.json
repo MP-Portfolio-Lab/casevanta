@@ -1,0 +1,15 @@
+{
+  "name": "staff-web-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/staff-web-e2e/src",
+  "implicitDependencies": ["staff-web"],
+  "targets": {
+    "e2e": {
+      "//": "Playwright starts the identity provider, the dev server and the BFF itself (webServer in playwright.config.mts). Never cached: results depend on the .NET backend, which Nx does not track.",
+      "cache": false,
+      "dependsOn": []
+    }
+  },
+  "tags": ["type:e2e", "scope:staff"]
+}

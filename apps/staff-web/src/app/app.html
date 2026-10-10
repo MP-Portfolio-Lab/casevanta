@@ -1,0 +1,36 @@
+<header class="border-b bg-background">
+  <div class="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4">
+    <a class="text-lg font-semibold tracking-tight" routerLink="/">Casevanta</a>
+
+    @if (session.profile(); as profile) {
+      @if (profile.isAuthenticated) {
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-muted-foreground" data-testid="user-name">{{
+            session.displayName()
+          }}</span>
+          <!-- A real form POST: the BFF ends the session and redirects to the identity provider. -->
+          <form method="post" action="api/Account/Logout">
+            <input
+              type="hidden"
+              name="__RequestVerificationToken"
+              [value]="session.requestToken()"
+            />
+            <button hlmBtn variant="outline" size="sm" type="submit" data-testid="sign-out">
+              <ng-icon name="lucideLogOut" />
+              Sign out
+            </button>
+          </form>
+        </div>
+      } @else {
+        <a hlmBtn size="sm" href="api/Account/Login" data-testid="sign-in">
+          <ng-icon name="lucideLogIn" />
+          Sign in
+        </a>
+      }
+    }
+  </div>
+</header>
+
+<main class="mx-auto max-w-5xl p-4">
+  <router-outlet />
+</main>
