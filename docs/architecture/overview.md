@@ -46,7 +46,7 @@ flowchart LR
 | Architecture rules | AR, `backend/tests/Casevanta.Architecture.Tests` | Dependency rules from ADR-0005 | .NET | `backend` |
 | Frontend unit | Vitest, `apps/staff-web` | Interceptor origin rules, cookie reader, shell and home contracts | Node.js | `web` |
 | Distributed integration | C, `backend/tests/Casevanta.AppHost.Tests` | The AppHost starts the real topology (containers included); health and contract | Docker | `integration` |
-| Browser journeys | B, `apps/staff-web-e2e` | Real browser through Keycloak, the BFF and the SPA: sign-in, protected calls, roles, sign-out, CSP guard | Docker, Node.js | `e2e` (non-blocking until proven stable) |
+| Browser journeys | B, `apps/staff-web-e2e` | Real browser through Keycloak, the BFF and the SPA: sign-in, protected calls, roles, sign-out, CSP guard | Docker, Node.js | `e2e` |
 
 The API stays testable without Aspire: suite A hosts it in memory, and suite C is the only layer
 that starts the distributed application.

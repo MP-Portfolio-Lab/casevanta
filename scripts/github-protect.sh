@@ -9,7 +9,7 @@ set -euo pipefail
 
 repo="${1:-MattWUchanski/casevanta}"
 branch="main"
-read -r -a checks <<< "${REQUIRED_CHECKS:-secrets backend web}"
+read -r -a checks <<< "${REQUIRED_CHECKS:-secrets backend web integration e2e}"
 
 echo "Repository: $repo"
 
