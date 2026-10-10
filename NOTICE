@@ -1,0 +1,14 @@
+Casevanta
+Copyright 2026 Matthew Uchanski (https://github.com/MattWUchanski)
+
+This product includes software derived from
+bff-openiddict-aspnetcore-angular
+(https://github.com/damienbod/bff-openiddict-aspnetcore-angular),
+Copyright (c) 2023 damienbod, licensed under the Apache License, Version 2.0.
+It was imported at commit 08a8d384e68ef56dc3ae1db436c9c62b06486912
+(2026-05-16) and has been modified since. The following upstream files were
+deliberately excluded from the import: bff/ui/certs/ (development TLS key
+pair), IdentityProvider/usersdatabase.sqlite (sample user database) and
+bff/server/wwwroot/ (build output).
+
+The Apache License, Version 2.0 is reproduced in the LICENSE file.
