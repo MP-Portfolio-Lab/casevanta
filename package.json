@@ -16,7 +16,8 @@
     "lint": "nx run-many -t lint",
     "e2e": "nx e2e staff-web-e2e",
     "format": "nx format:write --all",
-    "format:check": "nx format:check --all"
+    "format:check": "nx format:check --all",
+    "staff-web:serve": "nx serve staff-web --port ${PORT:-4201}"
   },
   "dependencies": {
     "@angular/cdk": "~22.2.2",

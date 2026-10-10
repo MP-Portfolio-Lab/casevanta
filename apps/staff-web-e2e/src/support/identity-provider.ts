@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, request, type Page } from '@playwright/test';
 import { bff } from './bff';
 import type { TestUser } from './test-users';
 
@@ -6,6 +6,8 @@ import type { TestUser } from './test-users';
 export interface IdentityProviderAdapter {
   readonly name: string;
   readonly origin: string;
+  /** Waits until the provider serves its discovery document. */
+  waitUntilReady(timeoutMs?: number): Promise<void>;
   /** Makes sure the user can sign in (registers it if the provider allows self-registration). */
   ensureUser(page: Page, user: TestUser): Promise<void>;
   /** The display name the BFF reports for the user. */
@@ -21,6 +23,10 @@ export interface IdentityProviderAdapter {
 const openIddict: IdentityProviderAdapter = {
   name: 'openiddict',
   origin: 'https://localhost:44318',
+
+  async waitUntilReady(timeoutMs = 120_000) {
+    await waitForDiscoveryDocument(`${this.origin}/.well-known/openid-configuration`, timeoutMs);
+  },
 
   async ensureUser(page, user) {
     await page.goto(`${this.origin}/Identity/Account/Register`);
@@ -74,6 +80,26 @@ const openIddict: IdentityProviderAdapter = {
     await expect(page.locator('#Input_Password')).toBeVisible();
   },
 };
+
+async function waitForDiscoveryDocument(url: string, timeoutMs: number): Promise<void> {
+  const client = await request.newContext({ ignoreHTTPSErrors: true });
+  try {
+    await expect
+      .poll(
+        async () => {
+          try {
+            return (await client.get(url, { timeout: 5_000 })).status();
+          } catch {
+            return 0;
+          }
+        },
+        { timeout: timeoutMs, message: `identity provider discovery document at ${url}` },
+      )
+      .toBe(200);
+  } finally {
+    await client.dispose();
+  }
+}
 
 const adapters: Record<string, IdentityProviderAdapter> = { openiddict: openIddict };
 

@@ -4,8 +4,12 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Casevanta.Api/Casevanta.Api.csproj" />
+    <Project Path="src/Casevanta.AppHost/Casevanta.AppHost.csproj" />
+    <Project Path="src/Casevanta.ServiceDefaults/Casevanta.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Casevanta.Api.Tests/Casevanta.Api.Tests.csproj" />
+    <Project Path="tests/Casevanta.AppHost.Tests/Casevanta.AppHost.Tests.csproj" />
+    <Project Path="tests/Casevanta.Architecture.Tests/Casevanta.Architecture.Tests.csproj" />
   </Folder>
 </Solution>

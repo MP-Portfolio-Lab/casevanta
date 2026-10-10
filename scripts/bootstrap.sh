@@ -30,6 +30,12 @@ ok "pnpm $(pnpm --version)"
 command -v gitleaks >/dev/null || fail "gitleaks is missing: the pre-commit secret scan needs it (brew install gitleaks)"
 ok "gitleaks $(gitleaks version)"
 
+command -v aspire >/dev/null || fail "The Aspire CLI is missing: curl -sSL https://aspire.dev/install.sh | bash (or: dotnet tool install -g Aspire.Cli)"
+aspire_version=$(aspire --version | cut -d+ -f1)
+node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); process.exit(a>13||(a===13&&(b>6||(b===6&&c>=1)))?0:1)' "$aspire_version" \
+  || fail "Aspire CLI $aspire_version is too old: 13.6.1 or later is required (aspire update --self)"
+ok "Aspire CLI $aspire_version"
+
 if docker info >/dev/null 2>&1; then
   ok "Docker $(docker info --format '{{.ServerVersion}}')"
 else

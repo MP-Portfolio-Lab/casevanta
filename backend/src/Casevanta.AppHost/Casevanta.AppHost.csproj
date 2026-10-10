@@ -1,0 +1,22 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.1">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- DCP and the dashboard come from the Aspire CLI bundle: the installed CLI locally,
+         `dnx aspire.cli@<SDK version>` in CI (AspireCliInvocationMode=dnxpinned). -->
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>5892ce1c-07a3-4fd9-999d-32c8a6392599</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.JavaScript" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Casevanta.Api/Casevanta.Api.csproj" />
+    <!-- Inherited OpenIddict server; replaced by Keycloak in the next step. -->
+    <ProjectReference Include="../../../IdentityProvider/IdentityProvider.csproj" />
+  </ItemGroup>
+
+</Project>

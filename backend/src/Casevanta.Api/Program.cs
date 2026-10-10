@@ -10,6 +10,9 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// OpenTelemetry, health checks, service discovery and HTTP resilience (Casevanta.ServiceDefaults).
+builder.AddServiceDefaults();
+
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.AddServerHeader = false;
@@ -109,6 +112,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
+app.MapDefaultEndpoints();
 app.MapNotFound("/api/{**segment}");
 
 if (app.Environment.IsDevelopment())

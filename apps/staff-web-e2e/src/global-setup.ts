@@ -4,6 +4,7 @@ import { testUsers } from './support/test-users';
 
 /** Makes sure every synthetic test user exists in the identity provider under test. */
 export default async function globalSetup(): Promise<void> {
+  await identityProvider.waitUntilReady();
   const browser = await chromium.launch();
   try {
     for (const user of Object.values(testUsers)) {

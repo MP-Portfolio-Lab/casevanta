@@ -7,13 +7,15 @@
 @inject IHostEnvironment hostEnvironment
 @inject IConfiguration config
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiForgery
+@inject IHttpClientFactory httpClientFactory
 @{
     Layout = null;
 
     var source = "";
     if (hostEnvironment.IsDevelopment())
     {
-        var httpClient = new HttpClient();
+        // The factory's clients carry the service defaults: resilience, service discovery and tracing.
+        var httpClient = httpClientFactory.CreateClient();
         source = await httpClient.GetStringAsync($"{config["UiDevServerUrl"]}/index.html");
     }
     else
