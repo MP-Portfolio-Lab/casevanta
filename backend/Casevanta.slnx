@@ -3,7 +3,7 @@
     <Project Path="../IdentityProvider/IdentityProvider.csproj" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="../bff/server/BffOpenIddict.Server.csproj" />
+    <Project Path="src/Casevanta.Api/Casevanta.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Casevanta.Api.Tests/Casevanta.Api.Tests.csproj" />

@@ -64,7 +64,7 @@ export default defineConfig({
         `--UiDevServerUrl=${uiDevServer}`,
         `"--ReverseProxy:Clusters:cluster1:Destinations:cluster1/destination1:Address=${uiDevServer}/"`,
       ].join(' '),
-      cwd: path.join(repoRoot, 'bff', 'server'),
+      cwd: path.join(repoRoot, 'backend', 'src', 'Casevanta.Api'),
       url: `${bff.origin}/`,
       ignoreHTTPSErrors: true,
       reuseExistingServer,

@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../bff/server/BffOpenIddict.Server.csproj" />
+    <ProjectReference Include="../../src/Casevanta.Api/Casevanta.Api.csproj" />
   </ItemGroup>
 
 </Project>
