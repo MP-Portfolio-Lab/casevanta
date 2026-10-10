@@ -36,28 +36,35 @@ public class AccountController : ControllerBase
             OpenIdConnectDefaults.AuthenticationScheme);
     }
 
+    private static AuthenticationProperties GetAuthProperties(string? returnUrl) =>
+        new() { RedirectUri = ToLocalRedirect(returnUrl) };
+
     /// <summary>
-    /// Original src:
-    /// https://github.com/dotnet/blazor-samples/blob/main/8.0/BlazorWebOidc/BlazorWebOidc/LoginLogoutEndpointRouteBuilderExtensions.cs
+    /// Reduces a requested return URL to a path on this site, which prevents open redirects.
+    /// Absolute http(s) URLs keep only their path and query, relative paths are anchored at the
+    /// root, and anything that could still leave the site (protocol-relative or backslash forms,
+    /// control characters that browsers strip) falls back to the root.
     /// </summary>
-    private static AuthenticationProperties GetAuthProperties(string? returnUrl)
+    internal static string ToLocalRedirect(string? returnUrl)
     {
-        const string pathBase = "/";
+        const string root = "/";
 
-        // Prevent open redirects.
-        if (string.IsNullOrEmpty(returnUrl))
+        if (string.IsNullOrWhiteSpace(returnUrl))
         {
-            returnUrl = pathBase;
-        }
-        else if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Relative))
-        {
-            returnUrl = new Uri(returnUrl, UriKind.Absolute).PathAndQuery;
-        }
-        else if (returnUrl[0] != '/')
-        {
-            returnUrl = $"{pathBase}{returnUrl}";
+            return root;
         }
 
-        return new AuthenticationProperties { RedirectUri = returnUrl };
+        var candidate =
+            Uri.TryCreate(returnUrl, UriKind.Absolute, out var absolute)
+            && (absolute.Scheme == Uri.UriSchemeHttps || absolute.Scheme == Uri.UriSchemeHttp)
+                ? absolute.PathAndQuery
+                : returnUrl.StartsWith('/') ? returnUrl : root + returnUrl;
+
+        return IsLocalPath(candidate) ? candidate : root;
     }
+
+    private static bool IsLocalPath(string path) =>
+        path.StartsWith('/')
+        && (path.Length == 1 || (path[1] != '/' && path[1] != '\\'))
+        && !path.Any(char.IsControl);
 }

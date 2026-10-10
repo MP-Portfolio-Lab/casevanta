@@ -55,7 +55,7 @@ flowchart LR
 | T1 | [I/E] Cross-site scripting steals tokens or rides the session | Tokens stay server-side; session cookie is HttpOnly; strict CSP with a fresh per-request nonce injected into the host page; Angular template sanitisation | A05, A06, A07, A17, B05, B08 |
 | T2 | [T] Cross-site request forgery against the API | Session cookie SameSite=Lax; double-submit antiforgery (`__Host-` HttpOnly cookie + `X-XSRF-TOKEN` header) bound to the signed-in user; global `AutoValidateAntiforgeryToken`; the data endpoint validates even GET | A06, A09, A10, A19, B06 |
 | T3 | [S] Login CSRF, authorization-code injection or replay | Authorization code flow with PKCE (S256), `state` and `nonce`, HttpOnly + Secure correlation and nonce cookies | A04, B05 |
-| T4 | [S] Open redirect through `returnUrl` after login | Absolute URLs are reduced to their path; relative ones are anchored at `/` | A15, A20 |
+| T4 | [S] Open redirect through `returnUrl` after login | Absolute http(s) URLs are reduced to their path; relative ones are anchored at `/`; protocol-relative, backslash and control-character forms fall back to `/` | A15, A20 |
 | T5 | [T] Clickjacking | `X-Frame-Options: DENY` and `frame-ancestors 'none'` | A07, A17 |
 | T6 | [S] Session hijacking, fixation or an overlong session | Secure, HttpOnly, SameSite=Lax session cookie issued only after a completed OIDC sign-in | B05 |
 | T7 | [E] Unauthenticated or unauthorised API access | `[Authorize]` on protected endpoints; `/api` requests get 401 instead of a login redirect; unknown `/api` routes get 404 | A01, A02, A03, A08, A18, B02 |
@@ -74,7 +74,7 @@ documents current behaviour and must change when the gap closes.
 
 | ID | Gap | Threat | Plan |
 |---|---|---|---|
-| G1 | Protocol-relative return URLs (`//evil.example`) pass the open-redirect guard | T4 | Fix right after this baseline; A20 is skipped until then |
+| G1 | ~~Protocol-relative return URLs (`//evil.example`) pass the open-redirect guard~~ | T4 | Fixed 2026-10-10: only site-relative paths are accepted, everything else falls back to `/` (A20) |
 | G2 | Logout ignores antiforgery (`[IgnoreAntiforgeryToken]`), so another site can force a logout | T2 | Fix with the session work in the Keycloak step; A12 documents it |
 | G3 | Default 14-day sliding cookie lifetime; tickets are self-contained, so a copied cookie stays valid until it expires, even after logout | T6 | Explicit lifetime in the Keycloak step; server-side ticket store evaluated in ADR-0008 |
 | G4 | `IdentityModelEventSource.ShowPII = true` in every environment (BFF and IdentityProvider) | T9 | Development-only in the restructuring step; the IdentityProvider is removed with Keycloak |

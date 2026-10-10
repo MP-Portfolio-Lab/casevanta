@@ -61,20 +61,20 @@ public sealed class LoginLogoutTests(BffFactory factory)
         Assert.Equal(expectedRedirect, RedirectAfterLogin(response));
     }
 
-    [Theory(Skip = "Known gap T4 (threat model): protocol-relative return URLs pass the open-redirect guard. Fixed in the next commit.")]
+    [Theory]
     [InlineData("//evil.example/steal")]
     [InlineData("/\\evil.example/steal")]
-    public async Task A20_Login_does_not_accept_protocol_relative_return_urls(string returnUrl)
+    [InlineData("\\\\evil.example/steal")]
+    [InlineData("https://evil.example//other.example/steal")]
+    [InlineData("/\t/evil.example/steal")]
+    public async Task A20_Login_falls_back_to_the_root_for_return_urls_that_would_leave_the_site(string returnUrl)
     {
         using var browser = factory.CreateBrowser();
 
         var response = await browser.GetAsync($"/api/Account/Login?returnUrl={Uri.EscapeDataString(returnUrl)}");
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        var redirect = RedirectAfterLogin(response);
-        Assert.StartsWith("/", redirect);
-        Assert.False(redirect.StartsWith("//", StringComparison.Ordinal) || redirect.StartsWith("/\\", StringComparison.Ordinal),
-            $"The post-login redirect '{redirect}' would leave the site.");
+        Assert.Equal("/", RedirectAfterLogin(response));
     }
 
     [Fact]
