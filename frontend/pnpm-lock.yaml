@@ -194,8 +194,8 @@ importers:
         specifier: 36.1.0
         version: 36.1.0(@ng-icons/core@36.1.0(@angular-devkit/schematics@22.2.2(chokidar@5.0.0))(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@schematics/angular@22.2.2(chokidar@5.0.0))(rxjs@7.8.2))
       '@spartan-ng/brain':
-        specifier: 1.6.3
-        version: 1.6.3(5a05915da3a1ee79a4e2ba8e8720cc0e)
+        specifier: 1.8.0
+        version: 1.8.0(5a05915da3a1ee79a4e2ba8e8720cc0e)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -261,8 +261,8 @@ importers:
         specifier: ~22.2.2
         version: 22.2.2(chokidar@5.0.0)
       '@spartan-ng/cli':
-        specifier: 1.6.3
-        version: 1.6.3(e16d1ba10f1115a5ab15c940a6e2c4f9)
+        specifier: 1.8.0
+        version: 1.8.0(e16d1ba10f1115a5ab15c940a6e2c4f9)
       '@swc/helpers':
         specifier: ~0.5.18
         version: 0.5.23
@@ -2316,8 +2316,8 @@ packages:
     resolution: {integrity: sha512-JxpXKpxdmQcRsJbriWJOhB7HeVTzz9CEsPNw6fQ0LOuPFnvtyUIXLxyFbKv/LfoFUz8wFADCtNU5sjowME5Mvg==}
     engines: {node: ^22.22.3 || ^24.15.0 || >=26.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
 
-  '@spartan-ng/brain@1.6.3':
-    resolution: {integrity: sha512-qerkqUXXP0Wk9Lk7PMOM5BwHY1I066OJb49UWVt4pNT0KrQ24i1Ea06SLHbiXvR5fWilPrX5t42vibTkkmXyRw==}
+  '@spartan-ng/brain@1.8.0':
+    resolution: {integrity: sha512-JZUoaWQRHu6PeMiqEF4U9yjij0YrK6tN1iZwzgaTP740uVPkJHdTYv6Ui8+vOrHD3eOxiXNxnb2Q6VDcO+rJ6Q==}
     peerDependencies:
       '@angular/cdk': '>=21.0.0 <23.0.0'
       '@angular/common': '>=21.0.0 <23.0.0'
@@ -2332,8 +2332,8 @@ packages:
       luxon:
         optional: true
 
-  '@spartan-ng/cli@1.6.3':
-    resolution: {integrity: sha512-tz+5zjZ5T2tv8AksVn7NS2ZQxO2RSPQD6d/vT/E2vruu1v+DfiGWzUW1jpg/FeghgBY4o8+IGwvjfVXcTerYMg==}
+  '@spartan-ng/cli@1.8.0':
+    resolution: {integrity: sha512-UFbyniNj61unzXPbeg6D+dPz9LMO72nRFZwCUiMaS6HqJ2bifa4dGPicx5t3nTx8/9DdZjiN2Th/+aJ9NTZegA==}
     peerDependencies:
       tslib: ^2.3.0
 
@@ -6808,7 +6808,7 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@spartan-ng/brain@1.6.3(5a05915da3a1ee79a4e2ba8e8720cc0e)':
+  '@spartan-ng/brain@1.8.0(5a05915da3a1ee79a4e2ba8e8720cc0e)':
     dependencies:
       '@angular/cdk': 22.2.2(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@angular/forms@22.2.2(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@angular/platform-browser@22.2.2(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2)))(rxjs@7.8.2))(@angular/platform-browser@22.2.2(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2)))(rxjs@7.8.2)
       '@angular/common': 22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
@@ -6820,7 +6820,7 @@ snapshots:
       tslib: 2.8.1
       tw-animate-css: 1.4.0
 
-  '@spartan-ng/cli@1.6.3(e16d1ba10f1115a5ab15c940a6e2c4f9)':
+  '@spartan-ng/cli@1.8.0(e16d1ba10f1115a5ab15c940a6e2c4f9)':
     dependencies:
       '@angular/core': 22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2)
       '@nx/angular': 23.3.0(95598e2e1e01f289c3cdedfdac0c306d)
